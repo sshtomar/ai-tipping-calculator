@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <title>Tippy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Onboarding (first launch only) -->
+    <div id="onboarding" class="onboarding">
+        <div class="onboarding-content">
+            <div class="onboarding-icon">💡</div>
+            <h1 class="onboarding-title">Tippy</h1>
+            <p class="onboarding-tagline">Nobody knows how to tip anymore.<br>Now you do.</p>
+            <p class="onboarding-desc">Enter your bill, tell us the situation, and get a single confident answer — not a percentage slider.</p>
+            <div class="onboarding-privacy">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Your tips and data never leave this device.
+            </div>
+            <button class="btn-primary btn-large" id="btn-get-started">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="main-app hidden">
+
+        <!-- ============ TIP TAB ============ -->
+        <div id="tab-tip" class="tab-content active">
+
+            <!-- Screen: Entry -->
+            <div id="screen-entry" class="screen active">
+                <div class="screen-scroll">
+                    <div class="screen-header">
+                        <h1 class="brand">Tippy</h1>
+                    </div>
+
+                    <div class="amount-section">
+                        <label class="input-label" for="bill-amount">Bill total</label>
+                        <div class="amount-input-wrap">
+                            <span class="dollar-sign">$</span>
+                            <input type="text" inputmode="decimal" id="bill-amount" class="amount-input" placeholder="0.00" autocomplete="off">
+                        </div>
+                        <p class="amount-hint">Pre-tax subtotal works best, but total is fine too</p>
+                    </div>
+
+                    <div class="service-section">
+                        <label class="input-label">What kind of service?</label>
+                        <div class="service-grid" id="service-grid">
+                            <button class="service-btn" data-type="restaurant"><span class="service-emoji">🍽️</span><span class="service-name">Restaurant</span></button>
+                            <button class="service-btn" data-type="bar"><span class="service-emoji">🍸</span><span class="service-name">Bar / Pub</span></button>
+                            <button class="service-btn" data-type="cafe"><span class="service-emoji">☕</span><span class="service-name">Cafe / Counter</span></button>
+                            <button class="service-btn" data-type="delivery"><span class="service-emoji">📦</span><span class="service-name">Delivery</span></button>
+                            <button class="service-btn" data-type="rideshare"><span class="service-emoji">🚗</span><span class="service-name">Rideshare</span></button>
+                            <button class="service-btn" data-type="salon"><span class="service-emoji">💇</span><span class="service-name">Salon / Barber</span></button>
+                            <button class="service-btn" data-type="spa"><span class="service-emoji">💆</span><span class="service-name">Spa / Massage</span></button>
+                            <button class="service-btn" data-type="tattoo"><span class="service-emoji">🎨</span><span class="service-name">Tattoo</span></button>
+                            <button class="service-btn" data-type="valet"><span class="service-emoji">🚙</span><span class="service-name">Valet</span></button>
+                            <button class="service-btn" data-type="hotel"><span class="service-emoji">🛎️</span><span class="service-name">Hotel Staff</span></button>
+                            <button class="service-btn" data-type="movers"><span class="service-emoji">📦</span><span class="service-name">Movers</span></button>
+                            <button class="service-btn" data-type="other"><span class="service-emoji">✨</span><span class="service-name">Other</span></button>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary btn-continue" id="btn-to-context" disabled>
+                        Next
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+
+                    <button class="btn-text" id="btn-no-bill">No bill? Just need advice →</button>
+                </div>
+            </div>
+
+            <!-- Screen: No-Bill Advice -->
+            <div id="screen-no-bill" class="screen">
+                <div class="screen-scroll">
+                    <div class="screen-header">
+                        <button class="btn-back" id="btn-back-no-bill">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                            Back
+                        </button>
+                    </div>
+                    <h2 class="screen-title">Describe the situation</h2>
+                    <p class="screen-subtitle">Tell us who you're tipping, how long you've used their service, what they usually charge — whatever feels relevant.</p>
+                    <textarea id="no-bill-text" class="advice-textarea" placeholder="e.g., Holiday tip for my barber, I've been going for 2 years, haircut is usually $40" maxlength="280"></textarea>
+                    <div class="char-count"><span id="char-count">0</span>/280</div>
+                    <button class="btn-primary" id="btn-get-advice" disabled>Get Advice</button>
+                </div>
+            </div>
+
+            <!-- Screen: Context -->
+            <div id="screen-context" class="screen">
+                <div class="screen-scroll">
+                    <div class="screen-header">
+                        <button class="btn-back" id="btn-back-context">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                            Back
+                        </button>
+                    </div>
+                    <h2 class="screen-title">Any context?</h2>
+                    <p class="screen-subtitle">Totally optional — but it helps dial in the tip.</p>
+
+                    <div class="context-chips" id="context-chips">
+                        <button class="chip" data-tag="business_dinner">💼 Business dinner</button>
+                        <button class="chip" data-tag="date_night">🌹 Date night</button>
+                        <button class="chip" data-tag="holiday_season">🎄 Holiday season</button>
+                        <button class="chip" data-tag="large_group">👥 Large group (6+)</button>
+                        <button class="chip" data-tag="outstanding_service">⭐ Outstanding service</button>
+                        <button class="chip" data-tag="poor_service">😐 Poor service</button>
+                        <button class="chip" data-tag="takeout">🥡 Takeout</button>
+                        <button class="chip" data-tag="buffet">🍱 Buffet</button>
+                    </div>
+
+                    <label class="input-label" for="free-text" style="margin-top: 24px;">Anything else?</label>
+                    <input type="text" id="free-text" class="text-input" placeholder="e.g., it's raining, they stayed open late" maxlength="280">
+
+                    <button class="btn-primary btn-calculate" id="btn-calculate">
+                        ✨ Get My Tip
+                    </button>
+                    <button class="btn-text" id="btn-skip-context">Skip — just calculate →</button>
+                </div>
+            </div>
+
+            <!-- Screen: Loading -->
+            <div id="screen-loading" class="screen">
+                <div class="loading-content">
+                    <div class="loading-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p class="loading-message" id="loading-message">Consulting the Bistromathic Drive...</p>
+                </div>
+            </div>
+
+            <!-- Screen: Result -->
+            <div id="screen-result" class="screen">
+                <div class="screen-scroll">
+                    <div class="result-top">
+                        <div class="result-options">
+                            <button class="result-option option-lower" id="option-lower">
+                                <span class="option-label">Acceptable</span>
+                                <span class="option-amount" id="lower-amount">$0</span>
+                                <span class="option-pct" id="lower-pct">0%</span>
+                            </button>
+
+                            <button class="result-option option-recommended active" id="option-recommended">
+                                <span class="option-badge">Recommended</span>
+                                <span class="option-amount-big" id="rec-amount">$0</span>
+                                <span class="option-pct-big" id="rec-pct">0%</span>
+                            </button>
+
+                            <button class="result-option option-higher" id="option-higher">
+                                <span class="option-label">Generous</span>
+                                <span class="option-amount" id="higher-amount">$0</span>
+                                <span class="option-pct" id="higher-pct">0%</span>
+                            </button>
+                        </div>
+
+                        <div class="result-explanation" id="result-explanation"></div>
+
+                        <div class="result-total">
+                            <div class="total-row">
+                                <span>Total with tip</span>
+                                <span class="total-value" id="total-with-tip">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="split-section">
+                            <div class="split-header">
+                                <span class="split-label">Split the bill</span>
+                                <div class="split-stepper">
+                                    <button class="stepper-btn" id="split-minus">−</button>
+                                    <span class="stepper-value" id="split-count">1</span>
+                                    <button class="stepper-btn" id="split-plus">+</button>
+                                </div>
+                            </div>
+                            <div class="split-result hidden" id="split-result">
+                                <span class="split-per-person" id="per-person-amount">$0.00</span>
+                                <span class="split-suffix">per person</span>
+                            </div>
+                        </div>
+
+                        <div class="result-actions">
+                            <button class="action-btn" id="btn-copy">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                <span id="copy-text">Copy amount</span>
+                            </button>
+                            <button class="action-btn" id="btn-discreet">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span>Discreet mode</span>
+                            </button>
+                        </div>
+
+                        <div class="feedback-section">
+                            <p class="feedback-prompt">How'd we do?</p>
+                            <div class="feedback-buttons">
+                                <button class="feedback-btn" data-feedback="too_low">Too low</button>
+                                <button class="feedback-btn feedback-right" data-feedback="just_right">Just right</button>
+                                <button class="feedback-btn" data-feedback="too_high">Too high</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-text btn-start-over" id="btn-start-over">← Start over</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ GUIDE TAB ============ -->
+        <div id="tab-guide" class="tab-content">
+            <div class="screen-scroll">
+                <div class="screen-header">
+                    <h1 class="brand">Tippy</h1>
+                    <p class="guide-subtitle">Your pocket tipping reference</p>
+                </div>
+
+                <div class="guide-search-wrap">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="guide-search" class="guide-search" placeholder="Search (e.g., barber, hotel, movers)">
+                </div>
+
+                <div id="guide-list" class="guide-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ TAB BAR ============ -->
+        <nav class="tab-bar">
+            <button class="tab-btn active" data-tab="tip" id="tab-btn-tip">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Tip</span>
+            </button>
+            <button class="tab-btn" data-tab="guide" id="tab-btn-guide">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>Guide</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
