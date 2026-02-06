@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tippy — Liquid Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --glass-bg: rgba(255,255,255,0.45);
+  --glass-bg-light: rgba(255,255,255,0.3);
+  --glass-bg-deep: rgba(255,255,255,0.25);
+  --glass-border: rgba(255,255,255,0.6);
+  --glass-border-subtle: rgba(255,255,255,0.35);
+  --text-dark: #1A1A2E;
+  --text-medium: #4A4A6A;
+  --text-light: #7A7A9A;
+  --accent-teal: #0EA5E9;
+  --blur-heavy: blur(40px) saturate(180%);
+  --blur-medium: blur(24px) saturate(160%);
+  --transition: 300ms ease-out;
+  --prismatic: linear-gradient(135deg, #5B7FFF, #8B5CF6, #EC4899, #F59E0B, #5B7FFF);
+  --prismatic-btn: linear-gradient(135deg, #5B7FFF, #8B5CF6, #EC4899);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============ ANIMATED GRADIENT MESH BACKGROUND ============ */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, #EDE7F6 0%, #E3F2FD 50%, #FCE4EC 100%);
+  overflow: hidden;
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+  will-change: transform;
+}
+
+.bg-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #C5CAE9 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation: orbDrift1 20s ease-in-out infinite;
+}
+
+.bg-orb-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #BBDEFB 0%, transparent 70%);
+  top: 30%;
+  right: -15%;
+  animation: orbDrift2 25s ease-in-out infinite;
+}
+
+.bg-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #F8BBD0 0%, transparent 70%);
+  bottom: -5%;
+  left: 20%;
+  animation: orbDrift3 22s ease-in-out infinite;
+}
+
+.bg-orb-4 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #D1C4E9 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  animation: orbDrift4 18s ease-in-out infinite;
+}
+
+@keyframes orbDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(80px, 60px) scale(1.1); }
+  50% { transform: translate(40px, 120px) scale(0.95); }
+  75% { transform: translate(-30px, 60px) scale(1.05); }
+}
+
+@keyframes orbDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-60px, 80px) scale(1.05); }
+  50% { transform: translate(-100px, 30px) scale(1.1); }
+  75% { transform: translate(-40px, -40px) scale(0.95); }
+}
+
+@keyframes orbDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(60px, -50px) scale(1.08); }
+  50% { transform: translate(100px, -90px) scale(0.92); }
+  75% { transform: translate(30px, -30px) scale(1.04); }
+}
+
+@keyframes orbDrift4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-70px, 50px) scale(1.12); }
+  66% { transform: translate(50px, -60px) scale(0.9); }
+}
+
+/* ============ APP SHELL ============ */
+.app-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.app-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============ SCREENS ============ */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px 20px 40px;
+  animation: screenIn 400ms ease-out;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes screenIn {
+  0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============ GLASS PANELS ============ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.04),
+    0 2px 8px rgba(0,0,0,0.02),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.glass:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.06),
+    0 4px 12px rgba(0,0,0,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.glass-deep {
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.glass-tile {
+  background: rgba(255,255,255,0.38);
+  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  border: 1.5px solid rgba(255,255,255,0.55);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.03),
+    0 1px 4px rgba(0,0,0,0.02),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: all var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-tile:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.05),
+    0 2px 8px rgba(0,0,0,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.glass-tile:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ============ PRISMATIC EFFECTS ============ */
+.prismatic-border {
+  position: relative;
+}
+
+.prismatic-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  animation: prismaticShift 4s ease infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.prismatic-border.active::before,
+.prismatic-border:focus-within::before {
+  opacity: 1;
+}
+
+@keyframes prismaticShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.prismatic-text {
+  background: var(--prismatic-btn);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: prismaticShift 4s ease infinite;
+}
+
+.prismatic-btn {
+  background: var(--prismatic-btn);
+  background-size: 200% 200%;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 16px 32px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  animation: prismaticShift 4s ease infinite;
+  box-shadow: 0 4px 20px rgba(91,127,255,0.25), 0 2px 8px rgba(139,92,246,0.15);
+}
+
+.prismatic-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  border-radius: inherit;
+}
+
+.prismatic-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(91,127,255,0.3), 0 4px 12px rgba(139,92,246,0.2);
+}
+
+.prismatic-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.prismatic-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============ HEADER / LOGO ============ */
+.header-card {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.diamond-icon {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.diamond-icon::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  animation: prismaticShift 4s ease infinite;
+  transform: rotate(45deg);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(139,92,246,0.3);
+}
+
+.diamond-icon::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  transform: rotate(45deg);
+  border-radius: 6px;
+}
+
+.app-title {
+  font-size: 28px;
+  font-weight: 200;
+  letter-spacing: -0.5px;
+  color: var(--text-dark);
+}
+
+.app-subtitle {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+/* ============ SCREEN 1: ENTRY ============ */
+.amount-panel {
+  padding: 32px 24px 28px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.amount-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.amount-input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
+}
+
+.amount-currency {
+  font-size: 28px;
+  font-weight: 200;
+  color: var(--text-medium);
+  margin-right: 2px;
+  line-height: 1;
+}
+
+.amount-input {
+  font-family: inherit;
+  font-size: 48px;
+  font-weight: 200;
+  color: var(--text-dark);
+  background: transparent;
+  border: none;
+  outline: none;
+  text-align: center;
+  width: 180px;
+  letter-spacing: -1px;
+  caret-color: #8B5CF6;
+  line-height: 1;
+}
+
+.amount-input::placeholder {
+  color: rgba(74,74,106,0.3);
+}
+
+.amount-underline {
+  height: 2px;
+  margin: 8px auto 0;
+  max-width: 200px;
+  border-radius: 2px;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  animation: prismaticShift 4s ease infinite;
+  opacity: 0.5;
+  transition: opacity var(--transition);
+}
+
+.amount-panel:focus-within .amount-underline {
+  opacity: 1;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-left: 4px;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.service-tile {
+  padding: 14px 8px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.service-tile .emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.service-tile .label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-medium);
+  letter-spacing: 0.3px;
+}
+
+.service-tile.active {
+  background: rgba(255,255,255,0.55);
+  border-color: transparent;
+  box-shadow:
+    0 4px 20px rgba(91,127,255,0.12),
+    0 2px 8px rgba(139,92,246,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.service-tile.active .label {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.btn-row {
+  padding: 0 4px;
+  margin-top: auto;
+}
+
+.btn-full {
+  width: 100%;
+  display: block;
+}
+
+/* ============ SCREEN 2: CONTEXT ============ */
+.context-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.context-heading {
+  font-size: 22px;
+  font-weight: 300;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.context-sub {
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 300;
+  margin-bottom: 20px;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 9px 16px;
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-medium);
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.chip:hover {
+  background: rgba(255,255,255,0.55);
+  transform: translateY(-1px);
+}
+
+.chip.active {
+  background: var(--prismatic-btn);
+  background-size: 200% 200%;
+  animation: prismaticShift 4s ease infinite;
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(91,127,255,0.2), 0 2px 6px rgba(139,92,246,0.12);
+}
+
+.notes-panel {
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.notes-textarea {
+  width: 100%;
+  min-height: 80px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-dark);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 1.6;
+}
+
+.notes-textarea::placeholder {
+  color: rgba(74,74,106,0.3);
+}
+
+/* ============ SCREEN 3: LOADING ============ */
+.loading-screen {
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 40px;
+}
+
+.morph-ring-container {
+  width: 100px;
+  height: 100px;
+  position: relative;
+}
+
+.morph-ring {
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  position: relative;
+  animation: morphShape 3s ease-in-out infinite, morphSpin 4s linear infinite;
+}
+
+.morph-ring::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  padding: 3px;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  animation: prismaticShift 3s ease infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@keyframes morphShape {
+  0%, 100% { border-radius: 50%; }
+  25% { border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%; }
+  50% { border-radius: 30% 70% 50% 50% / 50% 50% 70% 30%; }
+  75% { border-radius: 60% 40% 40% 60% / 40% 60% 40% 60%; }
+}
+
+@keyframes morphSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-dots {
+  display: flex;
+  gap: 12px;
+}
+
+.loading-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6);
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; background: rgba(255,255,255,0.5); }
+  50% { transform: scale(1.4); opacity: 1; background: rgba(139,92,246,0.4); }
+}
+
+.loading-text {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text-medium);
+  letter-spacing: 0.5px;
+}
+
+/* ============ SCREEN 4: RESULTS ============ */
+.result-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.tip-options {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.tip-card {
+  flex: 1;
+  padding: 20px 10px 18px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.tip-card:hover {
+  transform: translateY(-4px) !important;
+}
+
+.tip-card-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.tip-card-amount {
+  font-size: 28px;
+  font-weight: 200;
+  color: var(--text-dark);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.tip-card-pct {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-medium);
+}
+
+.tip-card.featured {
+  transform: translateY(-8px);
+  z-index: 2;
+}
+
+.tip-card.featured .tip-card-amount {
+  font-size: 34px;
+}
+
+.tip-card.featured .tip-card-pct {
+  color: #8B5CF6;
+  font-weight: 600;
+}
+
+.tip-card.selected {
+  background: rgba(255,255,255,0.6);
+}
+
+.total-card {
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-card-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-medium);
+}
+
+.total-card-amount {
+  font-size: 32px;
+  font-weight: 200;
+  letter-spacing: -0.5px;
+}
+
+.explanation-panel {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.explanation-text {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-medium);
+  line-height: 1.65;
+}
+
+.explanation-text .ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8B5CF6;
+  background: rgba(139,92,246,0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.split-section {
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.split-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.split-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-medium);
+}
+
+.split-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.split-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text-medium);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.split-btn:hover {
+  background: rgba(255,255,255,0.55);
+  transform: scale(1.05);
+}
+
+.split-btn:active {
+  transform: scale(0.95);
+}
+
+.split-count {
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--text-dark);
+  min-width: 24px;
+  text-align: center;
+}
+
+.split-amount {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-medium);
+}
+
+.split-per-person {
+  font-size: 22px;
+  font-weight: 200;
+  color: var(--text-dark);
+  letter-spacing: -0.3px;
+}
+
+.start-over-btn {
+  display: block;
+  margin: 8px auto 0;
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--prismatic-btn);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: prismaticShift 4s ease infinite;
+  transition: opacity var(--transition);
+}
+
+.start-over-btn:hover {
+  opacity: 0.7;
+}
+
+/* ============ UTILITIES ============ */
+.spacer-sm { height: 8px; }
+.spacer-md { height: 16px; }
+.spacer-lg { height: 24px; }
+
+.fade-in {
+  animation: fadeIn 500ms ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered children animation */
+.stagger > * {
+  animation: fadeIn 400ms ease-out both;
+}
+.stagger > *:nth-child(1) { animation-delay: 50ms; }
+.stagger > *:nth-child(2) { animation-delay: 100ms; }
+.stagger > *:nth-child(3) { animation-delay: 150ms; }
+.stagger > *:nth-child(4) { animation-delay: 200ms; }
+.stagger > *:nth-child(5) { animation-delay: 250ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+.stagger > *:nth-child(7) { animation-delay: 350ms; }
+.stagger > *:nth-child(8) { animation-delay: 400ms; }
+.stagger > *:nth-child(9) { animation-delay: 450ms; }
+.stagger > *:nth-child(10) { animation-delay: 500ms; }
+.stagger > *:nth-child(11) { animation-delay: 550ms; }
+
+/* Back button */
+.back-btn {
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-bottom: 16px;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.45);
+  transform: translateX(-2px);
+}
+
+.back-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--text-medium);
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Safe area for bottom */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+</style>
+</head>
+<body>
+
+<!-- ANIMATED BACKGROUND -->
+<div class="bg-mesh">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-orb bg-orb-4"></div>
+</div>
+
+<!-- APP -->
+<div class="app-container">
+
+  <!-- ========== SCREEN 1: ENTRY ========== -->
+  <div id="screen-entry" class="screen active">
+    <div class="header-card glass">
+      <div class="diamond-icon"></div>
+      <div>
+        <div class="app-title">Tippy</div>
+        <div class="app-subtitle">AI-powered tipping</div>
+      </div>
+    </div>
+
+    <div class="amount-panel glass prismatic-border" id="amount-panel">
+      <div class="amount-label">Bill Amount</div>
+      <div class="amount-input-wrap">
+        <span class="amount-currency">$</span>
+        <input
+          type="text"
+          inputmode="decimal"
+          class="amount-input"
+          id="bill-amount"
+          placeholder="0.00"
+          autocomplete="off"
+        >
+      </div>
+      <div class="amount-underline"></div>
+    </div>
+
+    <div class="section-label">Select service</div>
+
+    <div class="service-grid stagger" id="service-grid">
+      <div class="glass-tile service-tile" data-service="restaurant">
+        <span class="emoji">🍽️</span>
+        <span class="label">Restaurant</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="bar">
+        <span class="emoji">🍸</span>
+        <span class="label">Bar</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="cafe">
+        <span class="emoji">☕</span>
+        <span class="label">Cafe</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="delivery">
+        <span class="emoji">🚗</span>
+        <span class="label">Delivery</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="rideshare">
+        <span class="emoji">🚕</span>
+        <span class="label">Rideshare</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="salon">
+        <span class="emoji">💇</span>
+        <span class="label">Salon</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="spa">
+        <span class="emoji">💆</span>
+        <span class="label">Spa</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="tattoo">
+        <span class="emoji">🎨</span>
+        <span class="label">Tattoo</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="valet">
+        <span class="emoji">🅿️</span>
+        <span class="label">Valet</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="hotel">
+        <span class="emoji">🏨</span>
+        <span class="label">Hotel</span>
+      </div>
+      <div class="glass-tile service-tile" data-service="movers">
+        <span class="emoji">📦</span>
+        <span class="label">Movers</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="prismatic-btn btn-full" id="btn-to-context" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 2: CONTEXT ========== -->
+  <div id="screen-context" class="screen">
+    <button class="back-btn" onclick="goTo('screen-entry')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <div class="context-panel glass">
+      <div class="context-heading">Add context</div>
+      <div class="context-sub">Help Tippy give better advice</div>
+      <div class="chip-grid stagger" id="chip-grid">
+        <button class="chip" data-tag="business">Business dinner</button>
+        <button class="chip" data-tag="date">Date night</button>
+        <button class="chip" data-tag="holiday">Holiday season</button>
+        <button class="chip" data-tag="large-group">Large group</button>
+        <button class="chip" data-tag="outstanding">Outstanding service</button>
+        <button class="chip" data-tag="poor">Poor service</button>
+        <button class="chip" data-tag="takeout">Takeout</button>
+        <button class="chip" data-tag="buffet">Buffet</button>
+      </div>
+    </div>
+
+    <div class="notes-panel glass prismatic-border" id="notes-panel">
+      <textarea
+        class="notes-textarea"
+        id="notes-input"
+        placeholder="Any additional details... (optional)"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="spacer-lg"></div>
+
+    <div class="btn-row" style="margin-top:auto;">
+      <button class="prismatic-btn btn-full" id="btn-to-loading">Get tip recommendation</button>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 3: LOADING ========== -->
+  <div id="screen-loading" class="screen loading-screen">
+    <div class="morph-ring-container">
+      <div class="morph-ring"></div>
+    </div>
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+    <div class="loading-text">Finding your tip...</div>
+  </div>
+
+  <!-- ========== SCREEN 4: RESULTS ========== -->
+  <div id="screen-result" class="screen">
+    <button class="back-btn" onclick="goTo('screen-context')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <div class="result-label">Recommendation</div>
+
+    <div class="tip-options stagger" id="tip-options">
+      <div class="glass tip-card" data-idx="0" onclick="selectTip(0)">
+        <div class="tip-card-label">Good</div>
+        <div class="tip-card-amount" id="tip-amt-0">$15.30</div>
+        <div class="tip-card-pct" id="tip-pct-0">18%</div>
+      </div>
+      <div class="glass tip-card featured prismatic-border active selected" data-idx="1" onclick="selectTip(1)">
+        <div class="tip-card-label">Great</div>
+        <div class="tip-card-amount" id="tip-amt-1">$17.00</div>
+        <div class="tip-card-pct" id="tip-pct-1">20%</div>
+      </div>
+      <div class="glass tip-card" data-idx="2" onclick="selectTip(2)">
+        <div class="tip-card-label">Generous</div>
+        <div class="tip-card-amount" id="tip-amt-2">$21.25</div>
+        <div class="tip-card-pct" id="tip-pct-2">25%</div>
+      </div>
+    </div>
+
+    <div class="glass total-card">
+      <div>
+        <div class="total-card-label">Total with tip</div>
+      </div>
+      <div class="total-card-amount" id="total-amount">$102.00</div>
+    </div>
+
+    <div class="glass-deep explanation-panel">
+      <div class="explanation-text">
+        <span class="ai-badge">AI</span>
+        <span id="explanation-text">A 20% restaurant tip is the sweet spot — generous without being flashy. Your server will appreciate the recognition for great service.</span>
+      </div>
+    </div>
+
+    <div class="glass split-section">
+      <div class="split-header">
+        <span class="split-label">Split the bill</span>
+        <div class="split-controls">
+          <button class="split-btn" onclick="adjustSplit(-1)">−</button>
+          <span class="split-count" id="split-count">1</span>
+          <button class="split-btn" onclick="adjustSplit(1)">+</button>
+        </div>
+      </div>
+      <div class="split-header" id="split-detail" style="display:none;">
+        <span class="split-amount">Per person</span>
+        <span class="split-per-person" id="split-per-person">$102.00</span>
+      </div>
+    </div>
+
+    <button class="start-over-btn" onclick="startOver()">Start over</button>
+
+    <div class="spacer-lg"></div>
+  </div>
+
+</div><!-- /app-container -->
+
+<script>
+(function() {
+  'use strict';
+
+  // ---------- STATE ----------
+  const state = {
+    billAmount: 0,
+    service: null,
+    tags: new Set(),
+    notes: '',
+    selectedTip: 1,
+    splitCount: 1,
+    tips: []
+  };
+
+  // ---------- DOM REFS ----------
+  const $billInput  = document.getElementById('bill-amount');
+  const $amountPanel = document.getElementById('amount-panel');
+  const $serviceGrid = document.getElementById('service-grid');
+  const $btnContext  = document.getElementById('btn-to-context');
+  const $chipGrid   = document.getElementById('chip-grid');
+  const $notesInput = document.getElementById('notes-input');
+  const $notesPanel = document.getElementById('notes-panel');
+  const $btnLoading = document.getElementById('btn-to-loading');
+
+  // ---------- NAVIGATION ----------
+  function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById(id);
+    screen.classList.add('active');
+    // Scroll to top
+    document.querySelector('.app-container').scrollTop = 0;
+  }
+  window.goTo = goToScreen;
+
+  // ---------- BILL INPUT ----------
+  $billInput.addEventListener('input', function() {
+    let v = this.value.replace(/[^0-9.]/g, '');
+    // Only one decimal point
+    const parts = v.split('.');
+    if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+    // Max 2 decimal places
+    if (parts[1] && parts[1].length > 2) v = parts[0] + '.' + parts[1].slice(0, 2);
+    this.value = v;
+    state.billAmount = parseFloat(v) || 0;
+    updateContinueBtn();
+  });
+
+  $billInput.addEventListener('focus', function() {
+    $amountPanel.classList.add('active');
+  });
+  $billInput.addEventListener('blur', function() {
+    if (!this.value) $amountPanel.classList.remove('active');
+  });
+
+  // ---------- SERVICE SELECTION ----------
+  $serviceGrid.addEventListener('click', function(e) {
+    const tile = e.target.closest('.service-tile');
+    if (!tile) return;
+
+    document.querySelectorAll('.service-tile').forEach(t => {
+      t.classList.remove('active');
+      t.classList.remove('prismatic-border');
+    });
+    tile.classList.add('active');
+    tile.classList.add('prismatic-border');
+    state.service = tile.dataset.service;
+    updateContinueBtn();
+  });
+
+  function updateContinueBtn() {
+    $btnContext.disabled = !(state.billAmount > 0 && state.service);
+  }
+
+  // ---------- CONTINUE TO CONTEXT ----------
+  $btnContext.addEventListener('click', function() {
+    if (this.disabled) return;
+    goToScreen('screen-context');
+  });
+
+  // ---------- CONTEXT CHIPS ----------
+  $chipGrid.addEventListener('click', function(e) {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+
+    const tag = chip.dataset.tag;
+    if (state.tags.has(tag)) {
+      state.tags.delete(tag);
+      chip.classList.remove('active');
+    } else {
+      state.tags.add(tag);
+      chip.classList.add('active');
+    }
+  });
+
+  $notesInput.addEventListener('focus', function() {
+    $notesPanel.classList.add('active');
+  });
+  $notesInput.addEventListener('blur', function() {
+    if (!this.value) $notesPanel.classList.remove('active');
+  });
+
+  // ---------- GO TO LOADING ----------
+  $btnLoading.addEventListener('click', function() {
+    state.notes = $notesInput.value;
+    goToScreen('screen-loading');
+    setTimeout(function() {
+      calculateTips();
+      goToScreen('screen-result');
+    }, 2200);
+  });
+
+  // ---------- TIP CALCULATION ----------
+  const tipRates = {
+    restaurant:  { low: 0.18, mid: 0.20, high: 0.25 },
+    bar:         { low: 0.18, mid: 0.20, high: 0.25 },
+    cafe:        { low: 0.15, mid: 0.18, high: 0.20 },
+    delivery:    { low: 0.15, mid: 0.18, high: 0.22 },
+    rideshare:   { low: 0.15, mid: 0.18, high: 0.20 },
+    salon:       { low: 0.18, mid: 0.20, high: 0.25 },
+    spa:         { low: 0.18, mid: 0.20, high: 0.25 },
+    tattoo:      { low: 0.18, mid: 0.20, high: 0.25 },
+    valet:       { low: 0.15, mid: 0.18, high: 0.20 },
+    hotel:       { low: 0.15, mid: 0.18, high: 0.20 },
+    movers:      { low: 0.15, mid: 0.18, high: 0.22 }
+  };
+
+  const explanations = {
+    restaurant: 'A {pct}% restaurant tip is the sweet spot — generous without being flashy. Your server will appreciate the recognition for great service.',
+    bar:        'Bartenders live on tips. {pct}% on your tab shows solid appreciation for keeping your drinks flowing.',
+    cafe:       'For cafe service, {pct}% is thoughtful and appropriate. It makes your barista\'s day a little brighter.',
+    delivery:   '{pct}% is a fair tip for delivery — they brought it right to your door, rain or shine.',
+    rideshare:  'A {pct}% rideshare tip is generous. Your driver navigated traffic so you didn\'t have to.',
+    salon:      '{pct}% at the salon is right on the mark. Great hair deserves great appreciation.',
+    spa:        '{pct}% for spa services is the standard of thoughtfulness. Relaxation, rewarded.',
+    tattoo:     'Tattoo artists pour creativity into their craft. {pct}% honors that artistry beautifully.',
+    valet:      '{pct}% for valet is solid — they took care of your ride, you take care of them.',
+    hotel:      '{pct}% for hotel service shows class. Hospitality workers remember generous guests.',
+    movers:     'Movers do the heavy lifting, literally. {pct}% is a great way to show gratitude.'
+  };
+
+  function calculateTips() {
+    const bill = state.billAmount;
+    const rates = tipRates[state.service] || tipRates.restaurant;
+
+    // Adjust for context
+    let boost = 0;
+    if (state.tags.has('outstanding')) boost += 0.03;
+    if (state.tags.has('holiday')) boost += 0.02;
+    if (state.tags.has('poor')) boost -= 0.05;
+    if (state.tags.has('large-group')) boost += 0.02;
+    if (state.tags.has('business')) boost += 0.02;
+
+    const tipLow  = bill * Math.max(0.10, rates.low + boost);
+    const tipMid  = bill * Math.max(0.12, rates.mid + boost);
+    const tipHigh = bill * Math.max(0.15, rates.high + boost);
+
+    state.tips = [
+      { amount: tipLow,  pct: Math.round((tipLow / bill) * 100) },
+      { amount: tipMid,  pct: Math.round((tipMid / bill) * 100) },
+      { amount: tipHigh, pct: Math.round((tipHigh / bill) * 100) }
+    ];
+
+    // Update UI
+    state.tips.forEach(function(t, i) {
+      document.getElementById('tip-amt-' + i).textContent = '$' + t.amount.toFixed(2);
+      document.getElementById('tip-pct-' + i).textContent = t.pct + '%';
+    });
+
+    state.selectedTip = 1;
+    state.splitCount = 1;
+    selectTip(1);
+
+    // Explanation
+    const tmpl = explanations[state.service] || explanations.restaurant;
+    document.getElementById('explanation-text').textContent = tmpl.replace('{pct}', state.tips[1].pct);
+  }
+
+  // ---------- TIP SELECTION ----------
+  window.selectTip = function(idx) {
+    state.selectedTip = idx;
+    const cards = document.querySelectorAll('.tip-card');
+    cards.forEach(function(c, i) {
+      c.classList.remove('selected', 'prismatic-border', 'active', 'featured');
+      if (i === idx) {
+        c.classList.add('selected', 'prismatic-border', 'active', 'featured');
+        c.style.transform = 'translateY(-8px)';
+      } else {
+        c.style.transform = '';
+      }
+    });
+    updateTotal();
+  };
+
+  function updateTotal() {
+    const tip = state.tips[state.selectedTip];
+    if (!tip) return;
+    const total = state.billAmount + tip.amount;
+    document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+
+    // Split
+    const split = state.splitCount;
+    const per = total / split;
+    document.getElementById('split-per-person').textContent = '$' + per.toFixed(2);
+    document.getElementById('split-count').textContent = split;
+    document.getElementById('split-detail').style.display = split > 1 ? 'flex' : 'none';
+  }
+
+  // ---------- SPLIT CONTROLS ----------
+  window.adjustSplit = function(delta) {
+    state.splitCount = Math.max(1, Math.min(20, state.splitCount + delta));
+    updateTotal();
+  };
+
+  // ---------- START OVER ----------
+  window.startOver = function() {
+    state.billAmount = 0;
+    state.service = null;
+    state.tags.clear();
+    state.notes = '';
+    state.selectedTip = 1;
+    state.splitCount = 1;
+    state.tips = [];
+
+    $billInput.value = '';
+    $notesInput.value = '';
+    document.querySelectorAll('.service-tile').forEach(t => {
+      t.classList.remove('active', 'prismatic-border');
+    });
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    $amountPanel.classList.remove('active');
+    $notesPanel.classList.remove('active');
+    updateContinueBtn();
+
+    goToScreen('screen-entry');
+  };
+
+  // ---------- INIT ----------
+  // Pre-populate for demo feel
+  // (leave blank so user starts fresh)
+})();
+</script>
+</body>
+</html>

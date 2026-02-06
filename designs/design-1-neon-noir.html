@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tippy — AI Tipping Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep: #0D0D0F;
+  --bg-panel: #141418;
+  --glass: rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.08);
+  --cyan: #00F0FF;
+  --pink: #FF2D7B;
+  --purple: #8B5CF6;
+  --white: #FFFFFF;
+  --muted: #8A8A9A;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --glow-cyan: 0 0 20px rgba(0,240,255,0.35), 0 0 60px rgba(0,240,255,0.10);
+  --glow-pink: 0 0 20px rgba(255,45,123,0.35), 0 0 60px rgba(255,45,123,0.10);
+  --glow-purple: 0 0 20px rgba(139,92,246,0.35), 0 0 60px rgba(139,92,246,0.10);
+}
+
+html { font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--white);
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   ANIMATED GRADIENT MESH BACKGROUND
+   ============================================================ */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+.bg-mesh::before,
+.bg-mesh::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.30;
+  animation: meshFloat 12s ease-in-out infinite alternate;
+}
+.bg-mesh::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(139,92,246,0.5), transparent 70%);
+  top: -20%; left: -10%;
+}
+.bg-mesh::after {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(0,240,255,0.3), transparent 70%);
+  bottom: -15%; right: -10%;
+  animation-delay: -6s;
+  animation-duration: 15s;
+}
+.bg-mesh-extra {
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.18;
+  background: radial-gradient(circle, rgba(255,45,123,0.45), transparent 70%);
+  top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: meshFloat2 18s ease-in-out infinite alternate;
+}
+@keyframes meshFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(60px, 40px) scale(1.15); }
+}
+@keyframes meshFloat2 {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-40%, -45%) scale(1.2); }
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app-shell {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 430px;
+  min-height: 100dvh;
+  padding: 20px 20px 40px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0 24px;
+}
+.logo {
+  font-family: var(--font-heading);
+  font-weight: 700; font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.logo-dot {
+  -webkit-text-fill-color: var(--pink);
+  font-size: 1.8rem;
+}
+.header-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--cyan);
+  background: rgba(0,240,255,0.08);
+  border: 1px solid rgba(0,240,255,0.15);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+/* ============================================================
+   SCREENS – shared transition
+   ============================================================ */
+.screen {
+  display: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+}
+.screen.active {
+  display: block;
+}
+.screen.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ============================================================
+   SCREEN 1 — ENTRY
+   ============================================================ */
+.entry-title {
+  font-family: var(--font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+.entry-sub {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+/* Bill input */
+.bill-input-wrap {
+  position: relative;
+  margin-bottom: 28px;
+}
+.bill-input-wrap .currency {
+  position: absolute;
+  left: 20px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  transition: color 0.3s;
+  pointer-events: none;
+}
+.bill-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 22px 20px 22px 48px;
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  caret-color: var(--cyan);
+}
+.bill-input::placeholder {
+  color: rgba(255,255,255,0.15);
+  font-weight: 500;
+}
+.bill-input:focus {
+  border-color: rgba(0,240,255,0.5);
+  box-shadow: 0 0 0 4px rgba(0,240,255,0.08), var(--glow-cyan);
+}
+.bill-input:focus ~ .currency {
+  color: var(--cyan);
+}
+
+/* Service type */
+.section-label {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.service-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 32px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.service-scroll::-webkit-scrollbar { display: none; }
+
+.service-pill {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 16px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  user-select: none;
+}
+.service-pill .emoji { font-size: 1.05rem; }
+.service-pill:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+  color: var(--white);
+}
+.service-pill.selected {
+  background: rgba(0,240,255,0.08);
+  border-color: rgba(0,240,255,0.4);
+  color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+/* CTA button */
+.btn-neon {
+  position: relative;
+  width: 100%;
+  padding: 18px 24px;
+  border: none;
+  border-radius: 16px;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--white);
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(139,92,246,0.15));
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.btn-neon::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderRotate 4s linear infinite;
+  background-size: 300% 300%;
+}
+@keyframes borderRotate {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.btn-neon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(0,240,255,0.2), 0 0 60px rgba(139,92,246,0.1);
+}
+.btn-neon:active {
+  transform: scale(0.985);
+}
+.btn-neon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================================
+   SCREEN 2 — CONTEXT
+   ============================================================ */
+.context-heading {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.context-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.chip {
+  padding: 9px 16px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+}
+.chip:hover {
+  background: rgba(255,255,255,0.07);
+  color: var(--white);
+}
+.chip.selected {
+  background: rgba(255,45,123,0.1);
+  border-color: rgba(255,45,123,0.4);
+  color: var(--pink);
+  box-shadow: var(--glow-pink);
+}
+
+.context-textarea-wrap {
+  position: relative;
+  margin-bottom: 28px;
+}
+.context-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--white);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  caret-color: var(--pink);
+  line-height: 1.6;
+}
+.context-textarea::placeholder {
+  color: rgba(255,255,255,0.18);
+}
+.context-textarea:focus {
+  border-color: rgba(255,45,123,0.4);
+  box-shadow: 0 0 0 4px rgba(255,45,123,0.06), var(--glow-pink);
+}
+.char-count {
+  position: absolute;
+  bottom: 12px; right: 16px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.btn-row {
+  display: flex; gap: 12px;
+}
+.btn-ghost {
+  flex: 1;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.btn-ghost:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--white);
+}
+.btn-neon-sm {
+  flex: 2;
+  position: relative;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 14px;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(255,45,123,0.18), rgba(139,92,246,0.18));
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.btn-neon-sm::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderRotate 4s linear infinite;
+  background-size: 300% 300%;
+}
+.btn-neon-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(255,45,123,0.15);
+}
+
+/* ============================================================
+   SCREEN 3 — LOADING
+   ============================================================ */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  gap: 36px;
+}
+.neon-ring {
+  position: relative;
+  width: 100px; height: 100px;
+}
+.neon-ring svg {
+  width: 100%; height: 100%;
+  animation: ringPulse 2s ease-in-out infinite;
+}
+.neon-ring circle {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.ring-track { stroke: rgba(255,255,255,0.04); }
+.ring-fill {
+  stroke: url(#neonGrad);
+  stroke-dasharray: 220;
+  stroke-dashoffset: 60;
+  animation: ringDash 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(0,240,255,0.5));
+}
+@keyframes ringDash {
+  0%   { stroke-dashoffset: 220; }
+  50%  { stroke-dashoffset: 60; }
+  100% { stroke-dashoffset: 220; }
+}
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+.loading-text {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--muted);
+  animation: textPulse 2s ease-in-out infinite;
+}
+@keyframes textPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(3) infinite;
+}
+@keyframes dots {
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
+}
+
+/* ============================================================
+   SCREEN 4 — RESULT
+   ============================================================ */
+.result-label {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Tip options row */
+.tip-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: stretch;
+}
+.tip-card {
+  flex: 1;
+  padding: 18px 10px;
+  border-radius: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  background: var(--glass);
+  border: 1.5px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.tip-card .tip-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.tip-card .tip-amount {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 4px;
+  transition: text-shadow 0.3s;
+}
+.tip-card .tip-pct {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.tip-card:hover {
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.07);
+}
+.tip-card.selected {
+  border-color: rgba(0,240,255,0.45);
+  background: rgba(0,240,255,0.06);
+  box-shadow: var(--glow-cyan);
+}
+.tip-card.selected .tip-amount {
+  color: var(--cyan);
+  text-shadow: 0 0 20px rgba(0,240,255,0.5), 0 0 40px rgba(0,240,255,0.2);
+}
+.tip-card.selected .tip-pct {
+  color: var(--cyan);
+}
+
+/* Recommended card is larger */
+.tip-card.recommended {
+  padding: 22px 10px;
+  flex: 1.15;
+}
+.tip-card.recommended .tip-amount {
+  font-size: 1.85rem;
+}
+.rec-badge {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--bg-deep);
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+/* Total summary */
+.total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+.total-bar .total-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.total-bar .total-value {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Explanation card */
+.explanation-card {
+  padding: 20px;
+  border-radius: 18px;
+  margin-bottom: 20px;
+}
+.explanation-card .ex-icon {
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+}
+.explanation-card .ex-title {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.explanation-card p {
+  font-size: 0.84rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* Split bill */
+.split-section {
+  padding: 20px;
+  border-radius: 18px;
+  margin-bottom: 28px;
+}
+.split-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.split-header .split-title {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.split-stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.split-btn {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--white);
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: var(--font-heading);
+}
+.split-btn:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,240,255,0.15);
+  color: var(--cyan);
+}
+.split-btn:active { transform: scale(0.92); }
+.split-count {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+}
+.split-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.split-result .per-person-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.split-result .per-person-amount {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--pink);
+  text-shadow: 0 0 16px rgba(255,45,123,0.3);
+}
+
+/* Start over */
+.btn-outline {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0,240,255,0.25);
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cyan);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-outline:hover {
+  border-color: rgba(0,240,255,0.5);
+  box-shadow: var(--glow-cyan);
+  background: rgba(0,240,255,0.04);
+}
+.btn-outline:active { transform: scale(0.985); }
+
+/* ============================================================
+   UTILITIES & SCROLLBAR
+   ============================================================ */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+::selection {
+  background: rgba(0,240,255,0.25);
+  color: var(--white);
+}
+
+/* Small screen tweaks */
+@media (max-width: 380px) {
+  .tip-card .tip-amount { font-size: 1.25rem; }
+  .tip-card.recommended .tip-amount { font-size: 1.55rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Animated gradient mesh background -->
+<div class="bg-mesh">
+  <div class="bg-mesh-extra"></div>
+</div>
+
+<!-- SVG defs for neon gradient (loading ring) -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#FF2D7B"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">Tippy<span class="logo-dot">.</span></div>
+    <span class="header-badge">AI Powered</span>
+  </header>
+
+  <!-- ========================================================
+       SCREEN 1 — ENTRY
+       ======================================================== -->
+  <section id="screen-entry" class="screen active visible">
+    <h1 class="entry-title">How much was<br>the bill?</h1>
+    <p class="entry-sub">We'll figure out the perfect tip for you.</p>
+
+    <div class="bill-input-wrap">
+      <span class="currency">$</span>
+      <input
+        type="number"
+        class="bill-input"
+        id="billInput"
+        placeholder="0.00"
+        min="0"
+        step="0.01"
+        inputmode="decimal"
+        autocomplete="off"
+      >
+    </div>
+
+    <p class="section-label">Service type</p>
+    <div class="service-scroll" id="serviceScroll">
+      <button class="service-pill" data-service="restaurant">
+        <span class="emoji">🍽️</span> Restaurant
+      </button>
+      <button class="service-pill" data-service="bar">
+        <span class="emoji">🍸</span> Bar
+      </button>
+      <button class="service-pill" data-service="cafe">
+        <span class="emoji">☕</span> Cafe
+      </button>
+      <button class="service-pill" data-service="delivery">
+        <span class="emoji">🚗</span> Delivery
+      </button>
+      <button class="service-pill" data-service="rideshare">
+        <span class="emoji">🚕</span> Rideshare
+      </button>
+      <button class="service-pill" data-service="salon">
+        <span class="emoji">💇</span> Salon
+      </button>
+      <button class="service-pill" data-service="spa">
+        <span class="emoji">💆</span> Spa
+      </button>
+      <button class="service-pill" data-service="tattoo">
+        <span class="emoji">🎨</span> Tattoo
+      </button>
+      <button class="service-pill" data-service="valet">
+        <span class="emoji">🅿️</span> Valet
+      </button>
+      <button class="service-pill" data-service="hotel">
+        <span class="emoji">🏨</span> Hotel
+      </button>
+      <button class="service-pill" data-service="movers">
+        <span class="emoji">📦</span> Movers
+      </button>
+    </div>
+
+    <button class="btn-neon" id="btnCalculate" disabled>Calculate Tip</button>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 2 — CONTEXT
+       ======================================================== -->
+  <section id="screen-context" class="screen">
+    <h2 class="context-heading">Add context</h2>
+    <p class="context-sub">Help our AI personalize your tip recommendation. Optional but helpful!</p>
+
+    <div class="chips-wrap" id="chipsWrap">
+      <button class="chip" data-chip="business">Business dinner</button>
+      <button class="chip" data-chip="date">Date night</button>
+      <button class="chip" data-chip="holiday">Holiday season</button>
+      <button class="chip" data-chip="large-group">Large group</button>
+      <button class="chip" data-chip="outstanding">Outstanding service</button>
+      <button class="chip" data-chip="poor">Poor service</button>
+      <button class="chip" data-chip="takeout">Takeout</button>
+      <button class="chip" data-chip="buffet">Buffet</button>
+    </div>
+
+    <div class="context-textarea-wrap">
+      <textarea
+        class="context-textarea"
+        id="contextText"
+        placeholder="Anything else? e.g. 'The waiter was amazing' or 'Order was late'..."
+        maxlength="280"
+      ></textarea>
+      <span class="char-count" id="charCount">0 / 280</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btnBackEntry">Back</button>
+      <button class="btn-neon-sm" id="btnContinue">Continue</button>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 3 — LOADING
+       ======================================================== -->
+  <section id="screen-loading" class="screen">
+    <div class="loading-wrap">
+      <div class="neon-ring">
+        <svg viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="35"/>
+          <circle class="ring-fill" cx="40" cy="40" r="35"/>
+        </svg>
+      </div>
+      <span class="loading-text">Calculating perfect tip<span class="loading-dots"></span></span>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 4 — RESULT
+       ======================================================== -->
+  <section id="screen-result" class="screen">
+    <p class="result-label">Your tip options</p>
+
+    <div class="tip-options" id="tipOptions">
+      <!-- Acceptable -->
+      <div class="tip-card" data-tier="acceptable" data-pct="18" data-amount="15.30">
+        <div class="tip-label">Acceptable</div>
+        <div class="tip-amount">$15.30</div>
+        <div class="tip-pct">18%</div>
+      </div>
+      <!-- Recommended -->
+      <div class="tip-card recommended selected" data-tier="recommended" data-pct="20" data-amount="17.00">
+        <div class="rec-badge">AI Pick</div>
+        <div class="tip-label">Recommended</div>
+        <div class="tip-amount">$17.00</div>
+        <div class="tip-pct">20%</div>
+      </div>
+      <!-- Generous -->
+      <div class="tip-card" data-tier="generous" data-pct="25" data-amount="21.25">
+        <div class="tip-label">Generous</div>
+        <div class="tip-amount">$21.25</div>
+        <div class="tip-pct">25%</div>
+      </div>
+    </div>
+
+    <!-- Total bar -->
+    <div class="total-bar glass" id="totalBar">
+      <span class="total-label">Total with tip</span>
+      <span class="total-value" id="totalValue">$102.00</span>
+    </div>
+
+    <!-- Explanation -->
+    <div class="explanation-card glass">
+      <div class="ex-icon">💡</div>
+      <div class="ex-title">Why 20%?</div>
+      <p>For a restaurant dinner, 20% is the sweet spot — generous without being flashy. Your server will appreciate the kindness, and you'll feel good about it.</p>
+    </div>
+
+    <!-- Split bill -->
+    <div class="split-section glass">
+      <div class="split-header">
+        <span class="split-title">Split the bill</span>
+        <div class="split-stepper">
+          <button class="split-btn" id="splitMinus">−</button>
+          <span class="split-count" id="splitCount">1</span>
+          <button class="split-btn" id="splitPlus">+</button>
+        </div>
+      </div>
+      <div class="split-result">
+        <span class="per-person-label">Per person</span>
+        <span class="per-person-amount" id="perPerson">$102.00</span>
+      </div>
+    </div>
+
+    <button class="btn-outline" id="btnStartOver">Start Over</button>
+  </section>
+
+</div><!-- .app-shell -->
+
+<script>
+/* ==============================================================
+   TIPPY — Neon Noir Interactive Prototype
+   ============================================================== */
+(() => {
+  'use strict';
+
+  // ---- State ----
+  const state = {
+    bill: 0,
+    service: '',
+    contexts: new Set(),
+    note: '',
+    selectedTier: 'recommended',
+    splitCount: 1,
+    tipAmounts: { acceptable: 15.30, recommended: 17.00, generous: 21.25 },
+    tipPcts:    { acceptable: 18, recommended: 20, generous: 25 },
+  };
+
+  // ---- DOM refs ----
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+
+  const screens = {
+    entry:   $('#screen-entry'),
+    context: $('#screen-context'),
+    loading: $('#screen-loading'),
+    result:  $('#screen-result'),
+  };
+
+  const billInput    = $('#billInput');
+  const btnCalc      = $('#btnCalculate');
+  const serviceScroll = $('#serviceScroll');
+  const chipsWrap    = $('#chipsWrap');
+  const contextText  = $('#contextText');
+  const charCount    = $('#charCount');
+  const btnBack      = $('#btnBackEntry');
+  const btnContinue  = $('#btnContinue');
+  const tipOptions   = $('#tipOptions');
+  const totalValue   = $('#totalValue');
+  const splitCount   = $('#splitCount');
+  const perPerson    = $('#perPerson');
+  const splitMinus   = $('#splitMinus');
+  const splitPlus    = $('#splitPlus');
+  const btnStartOver = $('#btnStartOver');
+
+  // ---- Screen navigation ----
+  function goTo(name) {
+    Object.values(screens).forEach(s => {
+      s.classList.remove('visible');
+      // Remove active after transition
+      setTimeout(() => {
+        if (!s.classList.contains('visible')) s.classList.remove('active');
+      }, 460);
+    });
+
+    const target = screens[name];
+    // Small delay so the browser registers the display change before animating
+    requestAnimationFrame(() => {
+      target.classList.add('active');
+      requestAnimationFrame(() => {
+        target.classList.add('visible');
+      });
+    });
+
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- Validate entry ----
+  function validateEntry() {
+    const valid = state.bill > 0 && state.service !== '';
+    btnCalc.disabled = !valid;
+  }
+
+  // ---- Bill input ----
+  billInput.addEventListener('input', () => {
+    state.bill = parseFloat(billInput.value) || 0;
+    validateEntry();
+  });
+
+  // ---- Service pills ----
+  serviceScroll.addEventListener('click', (e) => {
+    const pill = e.target.closest('.service-pill');
+    if (!pill) return;
+    $$('.service-pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    state.service = pill.dataset.service;
+    validateEntry();
+  });
+
+  // ---- Calculate button ----
+  btnCalc.addEventListener('click', () => {
+    if (btnCalc.disabled) return;
+    goTo('context');
+  });
+
+  // ---- Context chips ----
+  chipsWrap.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    chip.classList.toggle('selected');
+    const val = chip.dataset.chip;
+    if (state.contexts.has(val)) state.contexts.delete(val);
+    else state.contexts.add(val);
+  });
+
+  // ---- Textarea char count ----
+  contextText.addEventListener('input', () => {
+    state.note = contextText.value;
+    charCount.textContent = `${contextText.value.length} / 280`;
+  });
+
+  // ---- Back button ----
+  btnBack.addEventListener('click', () => goTo('entry'));
+
+  // ---- Continue → Loading → Result ----
+  btnContinue.addEventListener('click', () => {
+    // Compute tip values based on actual bill
+    const bill = state.bill || 85;
+    state.tipAmounts.acceptable  = Math.round(bill * 0.18 * 100) / 100;
+    state.tipAmounts.recommended = Math.round(bill * 0.20 * 100) / 100;
+    state.tipAmounts.generous    = Math.round(bill * 0.25 * 100) / 100;
+
+    goTo('loading');
+
+    setTimeout(() => {
+      populateResult();
+      goTo('result');
+    }, 2200);
+  });
+
+  // ---- Populate result screen ----
+  function populateResult() {
+    const bill = state.bill || 85;
+
+    // Update tip cards
+    $$('.tip-card').forEach(card => {
+      const tier = card.dataset.tier;
+      const amt = state.tipAmounts[tier];
+      const pct = state.tipPcts[tier];
+      card.dataset.amount = amt.toFixed(2);
+      card.querySelector('.tip-amount').textContent = '$' + amt.toFixed(2);
+      card.querySelector('.tip-pct').textContent = pct + '%';
+
+      // Reset selection
+      card.classList.remove('selected');
+      if (tier === 'recommended') card.classList.add('selected');
+    });
+
+    state.selectedTier = 'recommended';
+    state.splitCount = 1;
+    splitCount.textContent = '1';
+    updateTotal();
+  }
+
+  // ---- Update total & per-person ----
+  function updateTotal() {
+    const bill = state.bill || 85;
+    const tip = state.tipAmounts[state.selectedTier];
+    const total = bill + tip;
+    totalValue.textContent = '$' + total.toFixed(2);
+    const pp = total / state.splitCount;
+    perPerson.textContent = '$' + pp.toFixed(2);
+  }
+
+  // ---- Tip card selection ----
+  tipOptions.addEventListener('click', (e) => {
+    const card = e.target.closest('.tip-card');
+    if (!card) return;
+    $$('.tip-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.selectedTier = card.dataset.tier;
+    updateTotal();
+  });
+
+  // ---- Split stepper ----
+  splitMinus.addEventListener('click', () => {
+    if (state.splitCount > 1) {
+      state.splitCount--;
+      splitCount.textContent = state.splitCount;
+      updateTotal();
+    }
+  });
+  splitPlus.addEventListener('click', () => {
+    if (state.splitCount < 20) {
+      state.splitCount++;
+      splitCount.textContent = state.splitCount;
+      updateTotal();
+    }
+  });
+
+  // ---- Start over ----
+  btnStartOver.addEventListener('click', () => {
+    // Reset state
+    state.bill = 0;
+    state.service = '';
+    state.contexts.clear();
+    state.note = '';
+    billInput.value = '';
+    contextText.value = '';
+    charCount.textContent = '0 / 280';
+    $$('.service-pill').forEach(p => p.classList.remove('selected'));
+    $$('.chip').forEach(c => c.classList.remove('selected'));
+    btnCalc.disabled = true;
+    goTo('entry');
+  });
+
+  // ---- Pre-select restaurant for demo feel ----
+  // (user can change it)
+
+})();
+</script>
+</body>
+</html>

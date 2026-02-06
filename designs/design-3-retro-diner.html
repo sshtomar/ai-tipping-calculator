@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tippy's — AI Tipping Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FFF5E6;
+    --cherry: #E23636;
+    --cherry-dark: #B82828;
+    --teal: #3FBFAD;
+    --teal-dark: #2E9A8A;
+    --mustard: #F2C94C;
+    --mustard-dark: #D4AD2E;
+    --brown: #3D2B1F;
+    --brown-light: #6B4F3E;
+    --chrome-light: #E8E8E8;
+    --chrome-mid: #C0C0C0;
+    --chrome-dark: #A0A0A0;
+    --card-bg: #FFFAF2;
+    --shadow: rgba(61, 43, 31, 0.12);
+    --shadow-strong: rgba(61, 43, 31, 0.22);
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--brown);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== CHECKERBOARD BACKGROUND ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(45deg, rgba(226,54,54,0.03) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(226,54,54,0.03) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(226,54,54,0.03) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(226,54,54,0.03) 75%);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+    animation: checkerScroll 20s linear infinite;
+  }
+
+  @keyframes checkerScroll {
+    to { background-position: 40px 40px, 40px 60px, 60px 20px, 0px 40px; }
+  }
+
+  /* ===== APP SHELL ===== */
+  .app {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 40px;
+  }
+
+  /* ===== CHECKERBOARD STRIP ===== */
+  .checker-strip {
+    width: 100%;
+    height: 12px;
+    background-image:
+      linear-gradient(45deg, var(--cherry) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--cherry) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--cherry) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--cherry) 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+    flex-shrink: 0;
+  }
+
+  .checker-strip.teal {
+    background-image:
+      linear-gradient(45deg, var(--teal) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--teal) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--teal) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--teal) 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    display: none;
+    flex-direction: column;
+    animation: screenIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== CHROME CARD ===== */
+  .chrome-card {
+    background: var(--card-bg);
+    border-radius: 18px;
+    margin: 0 16px;
+    padding: 20px;
+    position: relative;
+    box-shadow:
+      0 2px 8px var(--shadow),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .chrome-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, var(--chrome-light), var(--chrome-dark), var(--chrome-light));
+    z-index: -1;
+  }
+
+  /* ===== HEADER / LOGO ===== */
+  .diner-header {
+    text-align: center;
+    padding: 28px 16px 8px;
+    position: relative;
+  }
+
+  .diner-sign {
+    display: inline-block;
+    position: relative;
+    background: var(--cherry);
+    padding: 14px 40px 12px;
+    border-radius: 20px;
+    box-shadow:
+      0 4px 16px rgba(226, 54, 54, 0.35),
+      inset 0 2px 0 rgba(255,255,255,0.2),
+      inset 0 -2px 0 rgba(0,0,0,0.15);
+    border: 3px solid rgba(255,255,255,0.25);
+  }
+
+  .diner-sign::before,
+  .diner-sign::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .diner-sign::before {
+    left: 12px;
+    background: radial-gradient(circle, var(--mustard) 35%, transparent 36%);
+  }
+  .diner-sign::after {
+    right: 12px;
+    background: radial-gradient(circle, var(--mustard) 35%, transparent 36%);
+  }
+
+  .diner-sign h1 {
+    font-family: 'Righteous', cursive;
+    font-size: 2rem;
+    color: #fff;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    line-height: 1;
+  }
+
+  .diner-sign .sign-apostrophe {
+    font-size: 1.5rem;
+    vertical-align: super;
+  }
+
+  /* Starburst decoration */
+  .starburst-deco {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+  }
+  .starburst-deco::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--mustard);
+    clip-path: polygon(
+      50% 0%, 63% 30%, 100% 35%, 70% 58%,
+      80% 100%, 50% 73%, 20% 100%, 30% 58%,
+      0% 35%, 37% 30%
+    );
+  }
+  .starburst-deco.left { top: -4px; left: -8px; transform: rotate(-12deg); }
+  .starburst-deco.right { top: -4px; right: -8px; transform: rotate(12deg); }
+
+  .tagline {
+    font-family: 'Nunito', sans-serif;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--brown-light);
+    font-size: 0.95rem;
+    margin-top: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== BILL INPUT ===== */
+  .bill-section {
+    margin: 20px 16px 0;
+  }
+
+  .section-label {
+    font-family: 'Righteous', cursive;
+    font-size: 1rem;
+    color: var(--brown);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bill-input-wrap {
+    display: flex;
+    align-items: center;
+    background: #1A1A1A;
+    border-radius: 14px;
+    padding: 14px 18px;
+    box-shadow:
+      inset 0 2px 8px rgba(0,0,0,0.4),
+      0 2px 4px var(--shadow);
+    border: 2px solid #333;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bill-input-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  }
+
+  .bill-dollar {
+    font-family: 'Righteous', cursive;
+    font-size: 2rem;
+    color: #4ADE80;
+    margin-right: 4px;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  }
+
+  .bill-input {
+    font-family: 'Righteous', cursive;
+    font-size: 2rem;
+    color: #4ADE80;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    letter-spacing: 2px;
+  }
+  .bill-input::placeholder {
+    color: rgba(74, 222, 128, 0.3);
+    text-shadow: none;
+  }
+
+  /* ===== SERVICE GRID ===== */
+  .service-section { margin: 22px 16px 0; }
+
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .service-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 6px 10px;
+    border-radius: 14px;
+    border: 2px solid #E0D5C8;
+    background: var(--card-bg);
+    color: var(--brown);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px var(--shadow);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .service-btn .emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .service-btn:active {
+    transform: scale(0.93);
+  }
+
+  .service-btn.selected {
+    background: var(--cherry);
+    color: #fff;
+    border-color: var(--cherry-dark);
+    box-shadow: 0 3px 12px rgba(226, 54, 54, 0.35);
+    transform: scale(1.02);
+  }
+
+  .service-btn:hover:not(.selected) {
+    border-color: var(--cherry);
+    transform: scale(1.03);
+  }
+
+  /* ===== MAIN CTA ===== */
+  .cta-btn {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 24px 16px 0;
+    padding: 16px;
+    font-family: 'Righteous', cursive;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+    border-radius: 16px 16px 0 0;
+    pointer-events: none;
+  }
+
+  .cta-btn.cherry {
+    background: var(--cherry);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(226, 54, 54, 0.35), inset 0 -3px 0 var(--cherry-dark);
+  }
+  .cta-btn.cherry:active {
+    transform: scale(0.96) translateY(2px);
+    box-shadow: 0 2px 8px rgba(226, 54, 54, 0.25), inset 0 -1px 0 var(--cherry-dark);
+  }
+
+  .cta-btn.teal {
+    background: var(--teal);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(63, 191, 173, 0.35), inset 0 -3px 0 var(--teal-dark);
+  }
+  .cta-btn.teal:active {
+    transform: scale(0.96) translateY(2px);
+    box-shadow: 0 2px 8px rgba(63, 191, 173, 0.25), inset 0 -1px 0 var(--teal-dark);
+  }
+
+  /* ===== CONTEXT SCREEN ===== */
+  .context-header {
+    text-align: center;
+    padding: 24px 16px 4px;
+  }
+  .context-header h2 {
+    font-family: 'Righteous', cursive;
+    font-size: 1.5rem;
+    color: var(--brown);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .context-sub {
+    font-weight: 600;
+    color: var(--brown-light);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .chips-section { margin: 18px 16px 0; }
+
+  .chips-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .chip {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    border-radius: 40px;
+    border: 2px solid #DDD2C4;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .chip:nth-child(8n+1) { background: rgba(226,54,54,0.08); border-color: rgba(226,54,54,0.2); color: var(--cherry-dark); }
+  .chip:nth-child(8n+2) { background: rgba(63,191,173,0.08); border-color: rgba(63,191,173,0.2); color: var(--teal-dark); }
+  .chip:nth-child(8n+3) { background: rgba(242,201,76,0.1); border-color: rgba(242,201,76,0.3); color: var(--mustard-dark); }
+  .chip:nth-child(8n+4) { background: rgba(63,191,173,0.08); border-color: rgba(63,191,173,0.2); color: var(--teal-dark); }
+  .chip:nth-child(8n+5) { background: rgba(226,54,54,0.08); border-color: rgba(226,54,54,0.2); color: var(--cherry-dark); }
+  .chip:nth-child(8n+6) { background: rgba(242,201,76,0.1); border-color: rgba(242,201,76,0.3); color: var(--mustard-dark); }
+  .chip:nth-child(8n+7) { background: rgba(226,54,54,0.08); border-color: rgba(226,54,54,0.2); color: var(--cherry-dark); }
+  .chip:nth-child(8n+8) { background: rgba(63,191,173,0.08); border-color: rgba(63,191,173,0.2); color: var(--teal-dark); }
+
+  .chip:active { transform: scale(0.93); }
+
+  .chip.selected {
+    background: var(--cherry) !important;
+    color: #fff !important;
+    border-color: var(--cherry-dark) !important;
+    box-shadow: 0 2px 8px rgba(226, 54, 54, 0.3);
+    transform: scale(1.04);
+  }
+
+  /* Napkin note */
+  .napkin-section { margin: 20px 16px 0; }
+
+  .napkin-wrap {
+    position: relative;
+    transform: rotate(-0.8deg);
+  }
+
+  .napkin-textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--brown);
+    background: #FFFEF9;
+    border: 2px dashed #D4C9B8;
+    border-radius: 4px 16px 4px 16px;
+    outline: none;
+    resize: none;
+    box-shadow: 2px 3px 8px var(--shadow);
+    transition: border-color 0.2s;
+  }
+  .napkin-textarea:focus {
+    border-color: var(--teal);
+  }
+  .napkin-textarea::placeholder {
+    color: #B8A898;
+  }
+  .napkin-label {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: var(--mustard);
+    padding: 1px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--brown);
+    transform: rotate(1deg);
+  }
+
+  /* ===== LOADING SCREEN ===== */
+  .loading-screen {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    gap: 28px;
+    padding: 0 16px;
+  }
+
+  .jukebox-spinner {
+    width: 120px;
+    height: 120px;
+    position: relative;
+  }
+
+  .juke-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 4px solid transparent;
+  }
+
+  .juke-ring:nth-child(1) {
+    inset: 0;
+    border-top-color: var(--cherry);
+    border-bottom-color: var(--cherry);
+    animation: jukeSpin 1s linear infinite;
+  }
+  .juke-ring:nth-child(2) {
+    inset: 14px;
+    border-left-color: var(--teal);
+    border-right-color: var(--teal);
+    animation: jukeSpin 0.8s linear infinite reverse;
+  }
+  .juke-ring:nth-child(3) {
+    inset: 28px;
+    border-top-color: var(--mustard);
+    border-bottom-color: var(--mustard);
+    animation: jukeSpin 0.6s linear infinite;
+  }
+  .juke-ring:nth-child(4) {
+    inset: 42px;
+    border-left-color: var(--cherry);
+    border-right-color: var(--cherry);
+    animation: jukeSpin 0.4s linear infinite reverse;
+  }
+
+  .juke-center {
+    position: absolute;
+    inset: 50px;
+    border-radius: 50%;
+    background: var(--brown);
+  }
+  .juke-center::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--cherry);
+  }
+
+  @keyframes jukeSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    font-family: 'Righteous', cursive;
+    font-size: 1.3rem;
+    color: var(--brown);
+    text-align: center;
+  }
+
+  .bouncy-dots span {
+    display: inline-block;
+    animation: bounceDot 1.4s ease-in-out infinite;
+  }
+  .bouncy-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .bouncy-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounceDot {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .loading-sub {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--brown-light);
+    text-align: center;
+    margin-top: -16px;
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  .result-banner {
+    text-align: center;
+    padding: 24px 16px 4px;
+    position: relative;
+  }
+
+  .order-up {
+    font-family: 'Righteous', cursive;
+    font-size: 2rem;
+    color: var(--cherry);
+    letter-spacing: 3px;
+    text-shadow: 0 2px 4px rgba(226,54,54,0.15);
+    display: inline-block;
+    animation: orderPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.1s;
+  }
+  @keyframes orderPop {
+    from { opacity: 0; transform: scale(0.7) translateY(-10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .result-for {
+    font-weight: 600;
+    color: var(--brown-light);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  /* Tip cards */
+  .tip-cards {
+    margin: 16px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tip-card {
+    border-radius: 18px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .tip-card:nth-child(1) { animation-delay: 0.15s; }
+  .tip-card:nth-child(2) { animation-delay: 0.3s; }
+  .tip-card:nth-child(3) { animation-delay: 0.45s; }
+
+  @keyframes cardSlideIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .tip-card:active { transform: scale(0.97); }
+
+  /* Regular */
+  .tip-card.regular {
+    background: var(--card-bg);
+    border: 2px solid #E0D5C8;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  /* Recommended */
+  .tip-card.recommended {
+    background: linear-gradient(135deg, #FFF8F0, #FFF0E8);
+    border: 3px solid var(--cherry);
+    box-shadow: 0 4px 20px rgba(226, 54, 54, 0.2);
+  }
+
+  .tip-card.recommended::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 90px;
+    height: 90px;
+    background: var(--mustard);
+    opacity: 0.12;
+    clip-path: polygon(
+      50% 0%, 61% 35%, 98% 35%, 68% 57%,
+      79% 91%, 50% 70%, 21% 91%, 32% 57%,
+      2% 35%, 39% 35%
+    );
+    animation: starburstPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.6s;
+  }
+  @keyframes starburstPop {
+    from { opacity: 0; transform: scale(0) rotate(-30deg); }
+    to { opacity: 0.12; transform: scale(1) rotate(0); }
+  }
+
+  /* Generous */
+  .tip-card.generous {
+    background: var(--card-bg);
+    border: 2px solid #E0D5C8;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .tip-card.selected-tip {
+    border-color: var(--teal) !important;
+    background: rgba(63,191,173,0.06) !important;
+    box-shadow: 0 4px 16px rgba(63,191,173,0.2) !important;
+  }
+
+  .tip-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tip-card-label {
+    font-family: 'Righteous', cursive;
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+    color: var(--brown-light);
+    text-transform: uppercase;
+  }
+  .tip-card.recommended .tip-card-label {
+    color: var(--cherry);
+  }
+
+  .tip-pct-badge {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(61,43,31,0.08);
+    color: var(--brown-light);
+  }
+  .tip-card.recommended .tip-pct-badge {
+    background: rgba(226,54,54,0.1);
+    color: var(--cherry);
+  }
+
+  .tip-card-amount {
+    font-family: 'Righteous', cursive;
+    font-size: 2rem;
+    color: var(--brown);
+    margin-top: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .tip-card.recommended .tip-card-amount {
+    font-size: 2.4rem;
+    color: var(--cherry);
+  }
+
+  .tip-card-total {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--brown-light);
+    margin-top: 2px;
+  }
+
+  .rec-star {
+    color: var(--mustard);
+    font-size: 1rem;
+    margin-left: 4px;
+  }
+
+  /* Checker accent on cards */
+  .tip-card-checker {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background-image:
+      linear-gradient(45deg, rgba(226,54,54,0.15) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(226,54,54,0.15) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(226,54,54,0.15) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(226,54,54,0.15) 75%);
+    background-size: 6px 6px;
+    background-position: 0 0, 0 3px, 3px -3px, -3px 0px;
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* Receipt explanation */
+  .receipt-card {
+    margin: 16px 16px 0;
+    padding: 18px 16px;
+    background: #FFFEF9;
+    border: 2px dashed #C9BBAA;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px var(--shadow);
+    animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.6s;
+  }
+
+  .receipt-heading {
+    font-family: 'Righteous', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: var(--brown-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .receipt-text {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    color: var(--brown);
+    line-height: 1.55;
+  }
+
+  .receipt-divider {
+    border: none;
+    border-top: 1px dashed #C9BBAA;
+    margin: 12px 0;
+  }
+
+  /* Split section */
+  .split-section {
+    margin: 18px 16px 0;
+    animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.75s;
+  }
+
+  .split-label {
+    font-family: 'Righteous', cursive;
+    font-size: 1rem;
+    color: var(--brown);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .split-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .split-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--teal);
+    background: rgba(63,191,173,0.08);
+    color: var(--teal);
+    font-family: 'Righteous', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .split-btn:active { transform: scale(0.88); }
+  .split-btn:hover { background: var(--teal); color: #fff; }
+
+  .split-count {
+    font-family: 'Righteous', cursive;
+    font-size: 1.8rem;
+    color: var(--brown);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .split-result {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    font-size: 0.92rem;
+  }
+
+  .split-result-amount {
+    font-family: 'Righteous', cursive;
+    font-size: 1.3rem;
+    color: var(--teal);
+  }
+
+  /* ===== BACK LINK ===== */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 16px 16px 0;
+    font-weight: 700;
+    color: var(--brown-light);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    background: none;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .back-link:hover { color: var(--cherry); }
+
+  /* ===== FOOTER ===== */
+  .footer-note {
+    text-align: center;
+    margin-top: 24px;
+    padding: 0 16px;
+    font-size: 0.78rem;
+    color: var(--brown-light);
+    opacity: 0.7;
+  }
+
+  /* ===== ATOMIC STAR DECORATION ===== */
+  .atomic-star {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    position: relative;
+  }
+  .atomic-star::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--mustard);
+    clip-path: polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%);
+  }
+
+  /* ===== NEON GLOW EFFECT (subtle) ===== */
+  @keyframes neonPulse {
+    0%, 100% { text-shadow: 0 0 4px rgba(226,54,54,0.4), 0 2px 4px rgba(0,0,0,0.2); }
+    50% { text-shadow: 0 0 12px rgba(226,54,54,0.6), 0 2px 4px rgba(0,0,0,0.2); }
+  }
+
+  .neon-glow {
+    animation: neonPulse 2s ease-in-out infinite;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (min-width: 500px) {
+    .app {
+      border-left: 1px solid #E8DDD0;
+      border-right: 1px solid #E8DDD0;
+      box-shadow: 0 0 40px rgba(61,43,31,0.06);
+    }
+  }
+
+  /* Fix for iOS inputs */
+  input, textarea, button { -webkit-appearance: none; appearance: none; }
+  input:focus, textarea:focus { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ===================== SCREEN 1: ENTRY ===================== -->
+  <div class="screen active" id="screen-entry">
+    <div class="checker-strip"></div>
+
+    <div class="diner-header">
+      <div class="diner-sign">
+        <div class="starburst-deco left"></div>
+        <div class="starburst-deco right"></div>
+        <h1 class="neon-glow">TIPPY<span class="sign-apostrophe">'</span>S</h1>
+      </div>
+      <p class="tagline">Where every tip hits the spot!</p>
+    </div>
+
+    <div class="bill-section">
+      <div class="section-label"><span class="atomic-star"></span> Your Bill</div>
+      <div class="bill-input-wrap">
+        <span class="bill-dollar">$</span>
+        <input type="number" inputmode="decimal" class="bill-input" id="billInput" placeholder="0.00" step="0.01" min="0">
+      </div>
+    </div>
+
+    <div class="service-section">
+      <div class="section-label"><span class="atomic-star"></span> What's the occasion?</div>
+      <div class="service-grid" id="serviceGrid">
+        <button class="service-btn" data-service="restaurant">
+          <span class="emoji">&#127869;</span>Restaurant
+        </button>
+        <button class="service-btn" data-service="bar">
+          <span class="emoji">&#127864;</span>Bar
+        </button>
+        <button class="service-btn" data-service="cafe">
+          <span class="emoji">&#9749;</span>Cafe
+        </button>
+        <button class="service-btn" data-service="delivery">
+          <span class="emoji">&#128663;</span>Delivery
+        </button>
+        <button class="service-btn" data-service="rideshare">
+          <span class="emoji">&#128661;</span>Rideshare
+        </button>
+        <button class="service-btn" data-service="salon">
+          <span class="emoji">&#128135;</span>Salon
+        </button>
+        <button class="service-btn" data-service="spa">
+          <span class="emoji">&#128134;</span>Spa
+        </button>
+        <button class="service-btn" data-service="tattoo">
+          <span class="emoji">&#127912;</span>Tattoo
+        </button>
+        <button class="service-btn" data-service="valet">
+          <span class="emoji">&#127359;&#65039;</span>Valet
+        </button>
+        <button class="service-btn" data-service="hotel">
+          <span class="emoji">&#127976;</span>Hotel
+        </button>
+        <button class="service-btn" data-service="movers">
+          <span class="emoji">&#128230;</span>Movers
+        </button>
+      </div>
+    </div>
+
+    <button class="cta-btn cherry" id="btnRingUp" onclick="goToContext()">
+      Ring it up!
+    </button>
+
+    <p class="footer-note">Powered by AI &mdash; tips calculated with heart</p>
+  </div>
+
+  <!-- ===================== SCREEN 2: CONTEXT ===================== -->
+  <div class="screen" id="screen-context">
+    <div class="checker-strip teal"></div>
+
+    <button class="back-link" onclick="goTo('screen-entry')">&larr; Back</button>
+
+    <div class="context-header">
+      <h2><span class="atomic-star"></span> Set the Scene <span class="atomic-star"></span></h2>
+      <p class="context-sub">Add some flavor to your tip</p>
+    </div>
+
+    <div class="chips-section">
+      <div class="section-label">Situation</div>
+      <div class="chips-wrap" id="chipsWrap">
+        <span class="chip" data-tag="business">Business dinner</span>
+        <span class="chip" data-tag="date">Date night</span>
+        <span class="chip" data-tag="holiday">Holiday season</span>
+        <span class="chip" data-tag="group">Large group</span>
+        <span class="chip" data-tag="outstanding">Outstanding service</span>
+        <span class="chip" data-tag="poor">Poor service</span>
+        <span class="chip" data-tag="takeout">Takeout</span>
+        <span class="chip" data-tag="buffet">Buffet</span>
+      </div>
+    </div>
+
+    <div class="napkin-section">
+      <div class="section-label">Anything else?</div>
+      <div class="napkin-wrap">
+        <span class="napkin-label">Note</span>
+        <textarea class="napkin-textarea" id="napkinNote" placeholder="Scribble a note... e.g. &quot;Server was amazing, helped with allergies!&quot;"></textarea>
+      </div>
+    </div>
+
+    <button class="cta-btn cherry" onclick="goToLoading()">
+      Serve it up!
+    </button>
+
+    <p class="footer-note">Context helps our AI dial in the perfect tip</p>
+  </div>
+
+  <!-- ===================== SCREEN 3: LOADING ===================== -->
+  <div class="screen loading-screen" id="screen-loading">
+    <div class="jukebox-spinner">
+      <div class="juke-ring"></div>
+      <div class="juke-ring"></div>
+      <div class="juke-ring"></div>
+      <div class="juke-ring"></div>
+      <div class="juke-center"></div>
+    </div>
+    <p class="loading-text">Cooking up your tip<span class="bouncy-dots"><span>.</span><span>.</span><span>.</span></span></p>
+    <p class="loading-sub">Our AI chef is in the kitchen</p>
+  </div>
+
+  <!-- ===================== SCREEN 4: RESULT ===================== -->
+  <div class="screen" id="screen-result">
+    <div class="checker-strip"></div>
+
+    <div class="result-banner">
+      <div class="order-up neon-glow">ORDER UP!</div>
+      <p class="result-for" id="resultFor">Restaurant &middot; $85.00 bill</p>
+    </div>
+
+    <div class="tip-cards" id="tipCards">
+      <!-- Regular -->
+      <div class="tip-card regular" onclick="selectTip(this, 0)">
+        <div class="tip-card-checker"></div>
+        <div class="tip-card-top">
+          <span class="tip-card-label">THE REGULAR</span>
+          <span class="tip-pct-badge" id="pct0">18%</span>
+        </div>
+        <div class="tip-card-amount" id="amt0">$15.30</div>
+        <div class="tip-card-total" id="total0">Total: $100.30</div>
+      </div>
+
+      <!-- Recommended -->
+      <div class="tip-card recommended" onclick="selectTip(this, 1)">
+        <div class="tip-card-checker"></div>
+        <div class="tip-card-top">
+          <span class="tip-card-label">CHEF'S SPECIAL <span class="rec-star">&#11088;</span></span>
+          <span class="tip-pct-badge" id="pct1">20%</span>
+        </div>
+        <div class="tip-card-amount" id="amt1">$17.00</div>
+        <div class="tip-card-total" id="total1">Total: $102.00</div>
+      </div>
+
+      <!-- Generous -->
+      <div class="tip-card generous" onclick="selectTip(this, 2)">
+        <div class="tip-card-checker"></div>
+        <div class="tip-card-top">
+          <span class="tip-card-label">THE WORKS</span>
+          <span class="tip-pct-badge" id="pct2">25%</span>
+        </div>
+        <div class="tip-card-amount" id="amt2">$21.25</div>
+        <div class="tip-card-total" id="total2">Total: $106.25</div>
+      </div>
+    </div>
+
+    <!-- Receipt explanation -->
+    <div class="receipt-card">
+      <div class="receipt-heading">Why this tip?</div>
+      <p class="receipt-text" id="receiptText">
+        For sit-down dining, 20% keeps the kitchen happy and the service sweet. Your server works hard &mdash; this tip says "thanks a latte!"
+      </p>
+      <hr class="receipt-divider">
+      <p class="receipt-text" style="font-size:0.82rem; opacity:0.7;">
+        Based on: service type, bill amount &amp; context
+      </p>
+    </div>
+
+    <!-- Split -->
+    <div class="split-section">
+      <div class="split-label">Splitting the check?</div>
+      <div class="split-control">
+        <button class="split-btn" onclick="changeSplit(-1)">-</button>
+        <span class="split-count" id="splitCount">1</span>
+        <button class="split-btn" onclick="changeSplit(1)">+</button>
+      </div>
+      <div class="split-result" id="splitResult" style="display:none;">
+        Each person pays <span class="split-result-amount" id="splitAmount">$0.00</span>
+      </div>
+    </div>
+
+    <button class="cta-btn teal" onclick="newOrder()">
+      New Order
+    </button>
+
+    <p class="footer-note">Tip with confidence &mdash; Tippy's got your back!</p>
+  </div>
+
+</div>
+
+<script>
+  // ===== STATE =====
+  let selectedService = null;
+  let selectedTags = new Set();
+  let billAmount = 85;
+  let splitPeople = 1;
+  let selectedTipIndex = 1; // default to recommended
+  let tipData = [
+    { pct: 18, label: 'THE REGULAR' },
+    { pct: 20, label: "CHEF'S SPECIAL" },
+    { pct: 25, label: 'THE WORKS' }
+  ];
+
+  // Tip percentages by service type
+  const tipRanges = {
+    restaurant: [18, 20, 25],
+    bar:        [18, 20, 25],
+    cafe:       [15, 18, 20],
+    delivery:   [15, 18, 22],
+    rideshare:  [15, 18, 20],
+    salon:      [18, 20, 25],
+    spa:        [18, 20, 25],
+    tattoo:     [20, 25, 30],
+    valet:      [15, 18, 20],
+    hotel:      [15, 18, 20],
+    movers:     [15, 18, 25]
+  };
+
+  const explanations = {
+    restaurant: 'For sit-down dining, 20% keeps the kitchen happy and the service sweet. Your server works hard \u2014 this tip says "thanks a latte!"',
+    bar:        'Bartenders juggle orders like pros. A solid tip keeps the good vibes (and drinks) flowing!',
+    cafe:       'Your friendly barista crafted that cup with care. Even a modest tip brightens their day!',
+    delivery:   'They braved traffic and weather to bring you dinner. A fair tip is the cherry on top!',
+    rideshare:  'Safe ride, smooth tunes, clean car \u2014 your driver earned a nice tip for the journey!',
+    salon:      'Looking good takes skill! Your stylist nailed the look, so show some love.',
+    spa:        'You just got pampered like royalty. A generous tip completes the zen experience.',
+    tattoo:     'That ink is forever \u2014 and so is the artist\'s talent. Tattoo tips tend to run higher!',
+    valet:      'They parked it, kept it safe, and brought it back with a smile. Tip the hustle!',
+    hotel:      'From bellhops to housekeeping, hotel staff make your stay magical. Tip with heart!',
+    movers:     'They carried your life up three flights of stairs. These folks deserve a hearty tip!'
+  };
+
+  // ===== SERVICE BUTTONS =====
+  document.querySelectorAll('.service-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedService = btn.dataset.service;
+    });
+  });
+
+  // ===== CONTEXT CHIPS =====
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag;
+      if (selectedTags.has(tag)) {
+        selectedTags.delete(tag);
+        chip.classList.remove('selected');
+      } else {
+        selectedTags.add(tag);
+        chip.classList.add('selected');
+      }
+    });
+  });
+
+  // ===== NAVIGATION =====
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active');
+      s.style.animation = 'none';
+    });
+    const target = document.getElementById(screenId);
+    target.style.animation = '';
+    target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToContext() {
+    const input = document.getElementById('billInput');
+    const val = parseFloat(input.value);
+    if (!val || val <= 0) {
+      input.style.outline = '2px solid var(--cherry)';
+      input.focus();
+      setTimeout(() => input.style.outline = 'none', 1500);
+      return;
+    }
+    if (!selectedService) {
+      // Flash service section
+      const grid = document.getElementById('serviceGrid');
+      grid.style.outline = '2px solid var(--cherry)';
+      grid.style.outlineOffset = '4px';
+      grid.style.borderRadius = '14px';
+      setTimeout(() => grid.style.outline = 'none', 1500);
+      return;
+    }
+    billAmount = val;
+    goTo('screen-context');
+  }
+
+  function goToLoading() {
+    goTo('screen-loading');
+    setTimeout(() => {
+      calculateTips();
+      goTo('screen-result');
+    }, 2200);
+  }
+
+  function newOrder() {
+    // Reset state
+    selectedService = null;
+    selectedTags.clear();
+    splitPeople = 1;
+    selectedTipIndex = 1;
+    document.getElementById('billInput').value = '';
+    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('napkinNote').value = '';
+    document.getElementById('splitCount').textContent = '1';
+    document.getElementById('splitResult').style.display = 'none';
+    goTo('screen-entry');
+  }
+
+  // ===== TIP CALCULATION =====
+  function calculateTips() {
+    const ranges = tipRanges[selectedService] || [15, 20, 25];
+
+    // Adjust based on context
+    let adj = 0;
+    if (selectedTags.has('outstanding')) adj += 2;
+    if (selectedTags.has('holiday')) adj += 2;
+    if (selectedTags.has('poor')) adj -= 5;
+    if (selectedTags.has('takeout')) adj -= 3;
+    if (selectedTags.has('buffet')) adj -= 3;
+    if (selectedTags.has('group')) adj += 2;
+
+    const pcts = ranges.map(p => Math.max(5, p + adj));
+    tipData = [
+      { pct: pcts[0], label: 'THE REGULAR' },
+      { pct: pcts[1], label: "CHEF'S SPECIAL" },
+      { pct: pcts[2], label: 'THE WORKS' }
+    ];
+
+    // Update UI
+    const serviceName = selectedService.charAt(0).toUpperCase() + selectedService.slice(1);
+    document.getElementById('resultFor').innerHTML = `${serviceName} &middot; $${billAmount.toFixed(2)} bill`;
+
+    for (let i = 0; i < 3; i++) {
+      const tipAmt = (billAmount * tipData[i].pct / 100);
+      const totalAmt = billAmount + tipAmt;
+      document.getElementById(`pct${i}`).textContent = `${tipData[i].pct}%`;
+      document.getElementById(`amt${i}`).textContent = `$${tipAmt.toFixed(2)}`;
+      document.getElementById(`total${i}`).textContent = `Total: $${totalAmt.toFixed(2)}`;
+    }
+
+    document.getElementById('receiptText').textContent = explanations[selectedService] || explanations.restaurant;
+
+    // Reset split
+    splitPeople = 1;
+    document.getElementById('splitCount').textContent = '1';
+    document.getElementById('splitResult').style.display = 'none';
+
+    // Reset selection
+    selectedTipIndex = 1;
+    document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('selected-tip'));
+
+    // Re-trigger animations on tip cards
+    document.querySelectorAll('.tip-card').forEach(card => {
+      card.style.animation = 'none';
+      card.offsetHeight; // reflow
+      card.style.animation = '';
+    });
+    const orderUp = document.querySelector('.order-up');
+    if (orderUp) {
+      orderUp.style.animation = 'none';
+      orderUp.offsetHeight;
+      orderUp.style.animation = '';
+    }
+  }
+
+  // ===== TIP SELECTION =====
+  function selectTip(el, idx) {
+    selectedTipIndex = idx;
+    document.querySelectorAll('.tip-card').forEach(c => c.classList.remove('selected-tip'));
+    el.classList.add('selected-tip');
+    updateSplit();
+  }
+
+  // ===== SPLIT =====
+  function changeSplit(delta) {
+    splitPeople = Math.max(1, Math.min(20, splitPeople + delta));
+    document.getElementById('splitCount').textContent = splitPeople;
+    updateSplit();
+  }
+
+  function updateSplit() {
+    const el = document.getElementById('splitResult');
+    if (splitPeople > 1) {
+      const tipAmt = billAmount * tipData[selectedTipIndex].pct / 100;
+      const totalAmt = billAmount + tipAmt;
+      const perPerson = totalAmt / splitPeople;
+      document.getElementById('splitAmount').textContent = `$${perPerson.toFixed(2)}`;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  // ===== DEFAULT SERVICE (for demo) =====
+  // Pre-select restaurant for smoother first experience
+  document.querySelector('[data-service="restaurant"]').classList.add('selected');
+  selectedService = 'restaurant';
+  document.getElementById('billInput').value = '85.00';
+  billAmount = 85;
+</script>
+
+</body>
+</html>
