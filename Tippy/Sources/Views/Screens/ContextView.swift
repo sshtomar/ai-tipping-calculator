@@ -7,14 +7,14 @@ struct ContextView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: TippySpacing.xl) {
                 // Back button
                 Button {
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.25)) {
                         state.currentScreen = .entry
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: TippySpacing.xs) {
                         Image(systemName: "chevron.left")
                             .font(.subheadline.weight(.semibold))
                         Text("Back")
@@ -23,39 +23,54 @@ struct ContextView: View {
                     .foregroundStyle(.tippyTextSecondary)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                // Header
+                VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                    Text("OPTIONAL INPUT")
+                        .font(.tippyMono)
+                        .foregroundStyle(.tippyTextTertiary)
+                        .tracking(1.0)
+
                     Text("Any context?")
-                        .font(.custom("Georgia", size: 28, relativeTo: .title))
+                        .font(.tippyTitle)
                         .foregroundStyle(.tippyText)
 
-                    Text("Totally optional — but it helps dial in the tip.")
+                    Text("Optional — but it helps dial in the tip.")
                         .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
-                    
-                    // Show selected count
-                    if !state.contextTags.isEmpty {
-                        Text("\(state.contextTags.count) selected")
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(.tippyPrimaryDark)
-                            .padding(.top, 2)
-                    }
                 }
 
                 // Context chips
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 10),
-                    GridItem(.flexible(), spacing: 10),
-                ], spacing: 10) {
-                    ForEach(ContextTag.tags(for: state.serviceType ?? .other)) { tag in
-                        ContextChip(
-                            tag: tag,
-                            isSelected: state.contextTags.contains(tag)
-                        ) {
-                            withAnimation(.easeInOut(duration: 0.15)) {
-                                if state.contextTags.contains(tag) {
-                                    state.contextTags.remove(tag)
-                                } else {
-                                    state.contextTags.insert(tag)
+                VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                    HStack {
+                        Text("SITUATION")
+                            .font(.tippyLabel)
+                            .foregroundStyle(.tippyTextSecondary)
+                            .tracking(1.0)
+
+                        Spacer()
+
+                        if !state.contextTags.isEmpty {
+                            Text("\(state.contextTags.count) selected")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.tippyPrimary)
+                        }
+                    }
+
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: TippySpacing.sm),
+                        GridItem(.flexible(), spacing: TippySpacing.sm),
+                    ], spacing: TippySpacing.sm) {
+                        ForEach(ContextTag.tags(for: state.serviceType ?? .other)) { tag in
+                            ContextChip(
+                                tag: tag,
+                                isSelected: state.contextTags.contains(tag)
+                            ) {
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    if state.contextTags.contains(tag) {
+                                        state.contextTags.remove(tag)
+                                    } else {
+                                        state.contextTags.insert(tag)
+                                    }
                                 }
                             }
                         }
@@ -63,55 +78,55 @@ struct ContextView: View {
                 }
 
                 // Free text
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: TippySpacing.sm) {
                     Text("ANYTHING ELSE?")
                         .font(.tippyLabel)
                         .foregroundStyle(.tippyTextSecondary)
-                        .tracking(0.8)
+                        .tracking(1.0)
 
                     TextField("e.g., it's raining, they stayed open late", text: $state.freeText)
                         .font(.callout)
-                        .padding(14)
-                        .background(Color.tippySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Color.tippyBorder, lineWidth: 2)
-                        )
+                        .padding(TippySpacing.base)
+                        .tippyCard()
                 }
-                .padding(.top, 4)
 
                 // Calculate button
                 Button {
                     calculate()
                 } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "sparkles")
-                        Text("Get My Tip")
+                    HStack {
+                        HStack(spacing: TippySpacing.sm) {
+                            Image(systemName: "sparkles")
+                            Text("Get My Tip")
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.body.weight(.medium))
                     }
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.tippyText)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .tippyPrimaryButton()
                 }
-                .padding(.top, 4)
 
                 // Skip link
                 Button {
                     calculate()
                 } label: {
-                    Text("Skip — just calculate →")
-                        .font(.subheadline)
-                        .foregroundStyle(.tippyTextSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                    HStack(spacing: TippySpacing.sm) {
+                        Text("Skip — just calculate")
+                        Image(systemName: "arrow.right")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.tippyTextSecondary)
+                    .padding(.horizontal, TippySpacing.base)
+                    .padding(.vertical, TippySpacing.sm)
+                    .background(Color.tippySurface.opacity(0.85))
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.tippyBorder, lineWidth: 1))
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 80)
+            .padding(.horizontal, TippySpacing.xl)
+            .padding(.top, TippySpacing.base)
+            .padding(.bottom, TippySpacing.xxl)
         }
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
@@ -124,7 +139,7 @@ struct ContextView: View {
         guard let amount = state.parsedAmount,
               let serviceType = state.serviceType else { return }
 
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.25)) {
             state.currentScreen = .loading
         }
 
@@ -141,7 +156,6 @@ struct ContextView: View {
                 usageLimiter: usageLimiter
             )
 
-            // Ensure minimum 0.5s loading display
             let elapsed = Date().timeIntervalSince(startTime)
             if elapsed < 0.5 {
                 try? await Task.sleep(for: .seconds(0.5 - elapsed))
@@ -153,7 +167,7 @@ struct ContextView: View {
             state.isDiscreet = false
             state.feedbackGiven = nil
 
-            withAnimation(.easeInOut(duration: 0.4)) {
+            withAnimation(.easeInOut(duration: 0.3)) {
                 state.currentScreen = .result
             }
         }
@@ -169,21 +183,20 @@ struct ContextChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: TippySpacing.sm) {
                 Image(systemName: tag.iconName)
-                    .font(.footnote)
+                    .font(.system(size: 12))
+                    .frame(width: TippySpacing.base)
                 Text(tag.displayName)
-                    .font(.subheadline)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                    .lineLimit(1)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, TippySpacing.md)
+            .padding(.vertical, TippySpacing.md)
+            .foregroundStyle(isSelected ? .tippyPrimary : .tippyText)
             .background(isSelected ? Color.tippyPrimaryLight : Color.tippySurface)
-            .foregroundStyle(isSelected ? .tippyPrimaryDark : .tippyText)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isSelected ? Color.tippyPrimary : Color.tippyBorder, lineWidth: 1.5)
-            )
+            .tippyCard(isActive: isSelected)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)

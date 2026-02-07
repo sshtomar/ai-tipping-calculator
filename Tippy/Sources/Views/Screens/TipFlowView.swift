@@ -8,8 +8,6 @@ struct TipFlowView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.tippyBackground.ignoresSafeArea()
-
                 switch state.currentScreen {
                 case .entry:
                     EntryView(state: state)
@@ -31,6 +29,7 @@ struct TipFlowView: View {
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
+            .tippyScreenBackground()
             .animation(.easeInOut(duration: 0.3), value: state.currentScreen)
         }
     }

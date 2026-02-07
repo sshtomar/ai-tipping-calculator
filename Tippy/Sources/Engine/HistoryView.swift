@@ -2,116 +2,121 @@ import SwiftUI
 
 struct HistoryView: View {
     @State private var history: [[String: String]] = []
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: TippySpacing.lg) {
                     // Header
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Tippy")
-                            .font(.custom("Georgia", size: 32, relativeTo: .largeTitle))
+                    VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                        Text("FEEDBACK LOG")
+                            .font(.tippyMono)
+                            .foregroundStyle(.tippyTextTertiary)
+                            .tracking(1.0)
+
+                        Text("History")
+                            .font(.tippyTitle)
                             .foregroundStyle(.tippyText)
-                        Text("Your tipping history and preferences")
+                        Text("Your tipping feedback")
                             .font(.subheadline)
                             .foregroundStyle(.tippyTextSecondary)
                     }
-                    .padding(.top, 8)
-                    
+                    .padding(.top, TippySpacing.sm)
+
                     // Stats Card
                     if !history.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: TippySpacing.md) {
                             Text("STATS")
                                 .font(.tippyLabel)
                                 .foregroundStyle(.tippyTextSecondary)
-                                .tracking(0.8)
-                            
-                            HStack(spacing: 20) {
-                                StatItem(
-                                    value: "\(history.count)",
-                                    label: "Tips"
-                                )
-                                StatItem(
-                                    value: "\(feedbackCount("just_right"))",
-                                    label: "Just Right"
-                                )
-                                StatItem(
-                                    value: "\(feedbackCount("too_low"))",
-                                    label: "Too Low"
-                                )
-                                StatItem(
-                                    value: "\(feedbackCount("too_high"))",
-                                    label: "Too High"
-                                )
+                                .tracking(1.0)
+
+                            HStack(spacing: 0) {
+                                StatItem(value: "\(history.count)", label: "Tips")
+                                Spacer()
+                                StatItem(value: "\(feedbackCount("just_right"))", label: "Just Right")
+                                Spacer()
+                                StatItem(value: "\(feedbackCount("too_low"))", label: "Too Low")
+                                Spacer()
+                                StatItem(value: "\(feedbackCount("too_high"))", label: "Too High")
                             }
                         }
-                        .padding(16)
+                        .padding(TippySpacing.base)
                         .tippyCard()
                     }
-                    
+
                     // History List
                     if history.isEmpty {
-                        VStack(spacing: 12) {
+                        VStack(spacing: TippySpacing.md) {
                             Image(systemName: "clock.arrow.circlepath")
-                                .font(.system(.largeTitle))
+                                .font(.system(.title2))
                                 .foregroundStyle(.tippyTextTertiary)
                             Text("No history yet")
                                 .font(.callout.weight(.medium))
+                                .foregroundStyle(.tippyText)
                             Text("Your tipping feedback will appear here")
                                 .font(.subheadline)
                                 .foregroundStyle(.tippyTextTertiary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 60)
+                        .padding(.vertical, TippySpacing.xxl + TippySpacing.xxl)
                     } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("RECENT ACTIVITY")
+                        VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                            Text("RECENT")
                                 .font(.tippyLabel)
                                 .foregroundStyle(.tippyTextSecondary)
-                                .tracking(0.8)
-                            
-                            LazyVStack(spacing: 8) {
+                                .tracking(1.0)
+
+                            LazyVStack(spacing: TippySpacing.sm) {
                                 ForEach(history.reversed().prefix(20), id: \.self) { entry in
                                     HistoryCard(entry: entry)
                                 }
                             }
                         }
                     }
-                    
-                    // Clear history button
+
+                    // Clear
                     if !history.isEmpty {
                         Button(role: .destructive) {
                             clearHistory()
                         } label: {
                             Text("Clear History")
-                                .font(.subheadline)
-                                .foregroundStyle(.red)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, TippySpacing.xl)
+                                .padding(.vertical, TippySpacing.base)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .tippyCard()
+                                .background(
+                                    LinearGradient(
+                                        colors: [.tippyPrimary, .tippyPrimaryDark],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.horizontal, TippySpacing.xl)
+                .padding(.bottom, TippySpacing.lg)
             }
-            .background(Color.tippyBackground)
+            .tippyScreenBackground()
         }
         .onAppear {
             loadHistory()
         }
     }
-    
+
     private func loadHistory() {
         history = UserDefaults.standard.array(forKey: "tippy_feedback") as? [[String: String]] ?? []
     }
-    
+
     private func clearHistory() {
         UserDefaults.standard.removeObject(forKey: "tippy_feedback")
         history = []
     }
-    
+
     private func feedbackCount(_ type: String) -> Int {
         history.filter { $0["type"] == type }.count
     }
@@ -122,11 +127,12 @@ struct HistoryView: View {
 private struct StatItem: View {
     let value: String
     let label: String
-    
+
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: TippySpacing.xs) {
             Text(value)
-                .font(.custom("Georgia", size: 24, relativeTo: .title2))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .monospacedDigit()
                 .foregroundStyle(.tippyText)
             Text(label)
                 .font(.caption)
@@ -139,40 +145,40 @@ private struct StatItem: View {
 
 private struct HistoryCard: View {
     let entry: [String: String]
-    
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: TippySpacing.md) {
             feedbackIcon
-                .frame(width: 32, height: 32)
-            
+                .frame(width: TippySpacing.xxl, height: TippySpacing.xxl)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(serviceLabel)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.tippyText)
                 Text(dateLabel)
-                    .font(.footnote)
+                    .font(.caption)
                     .foregroundStyle(.tippyTextSecondary)
             }
-            
+
             Spacer()
         }
-        .padding(12)
+        .padding(TippySpacing.md)
         .tippyCard()
     }
-    
+
     @ViewBuilder
     private var feedbackIcon: some View {
         let type = entry["type"] ?? ""
         let (icon, color) = iconForType(type)
-        
+
         Image(systemName: icon)
             .font(.callout)
             .foregroundStyle(color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(color.opacity(0.1))
+            .background(color.opacity(0.08))
             .clipShape(Circle())
     }
-    
+
     private func iconForType(_ type: String) -> (String, Color) {
         switch type {
         case "just_right": return ("checkmark.circle.fill", .tippyGreen)
@@ -181,19 +187,19 @@ private struct HistoryCard: View {
         default: return ("circle.fill", .tippyTextTertiary)
         }
     }
-    
+
     private var serviceLabel: String {
         guard let service = entry["service"] else { return "Unknown" }
         if service == "advice" { return "Tipping advice" }
         return ServiceType(rawValue: service)?.displayName ?? service.capitalized
     }
-    
+
     private var dateLabel: String {
         guard let dateString = entry["date"],
               let date = ISO8601DateFormatter().date(from: dateString) else {
             return "Unknown date"
         }
-        
+
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())

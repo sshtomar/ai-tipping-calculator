@@ -16,56 +16,60 @@ struct GuideView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: TippySpacing.lg) {
                     // Header
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Tippy")
-                            .font(.custom("Georgia", size: 32, relativeTo: .largeTitle))
+                    VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                        Text("REFERENCE")
+                            .font(.tippyMono)
+                            .foregroundStyle(.tippyTextTertiary)
+                            .tracking(1.0)
+
+                        Text("Guide")
+                            .font(.tippyTitle)
                             .foregroundStyle(.tippyText)
                         Text("Your pocket tipping reference")
                             .font(.subheadline)
                             .foregroundStyle(.tippyTextSecondary)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, TippySpacing.sm)
 
                     // Search
-                    HStack(spacing: 10) {
+                    HStack(spacing: TippySpacing.sm) {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(.tippyTextTertiary)
                         TextField("Search (e.g., barber, hotel, movers)", text: $searchText)
                             .font(.callout)
                     }
-                    .padding(14)
-                    .background(Color.tippySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(Color.tippyBorder, lineWidth: 2)
-                    )
+                    .padding(TippySpacing.md)
+                    .tippyCard()
 
                     // Guide cards
                     if filteredEntries.isEmpty {
-                        VStack(spacing: 8) {
+                        VStack(spacing: TippySpacing.sm) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.title3)
+                                .foregroundStyle(.tippyTextTertiary)
                             Text("No results")
                                 .font(.callout.weight(.medium))
+                                .foregroundStyle(.tippyText)
                             Text("Try a different search term")
                                 .font(.subheadline)
                                 .foregroundStyle(.tippyTextTertiary)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 40)
+                        .padding(.vertical, TippySpacing.xxl + TippySpacing.sm)
                     } else {
-                        LazyVStack(spacing: 8) {
+                        LazyVStack(spacing: TippySpacing.sm) {
                             ForEach(filteredEntries) { entry in
                                 GuideCard(entry: entry)
                             }
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.horizontal, TippySpacing.xl)
+                .padding(.bottom, TippySpacing.lg)
             }
-            .background(Color.tippyBackground)
+            .tippyScreenBackground()
             .scrollDismissesKeyboard(.interactively)
         }
     }
@@ -80,22 +84,22 @@ private struct GuideCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.easeInOut(duration: 0.25)) {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 14) {
+                HStack(spacing: TippySpacing.md) {
                     GuideIcon(name: entry.iconName)
-                        .frame(width: 36, height: 36)
-                        .foregroundStyle(isExpanded ? .tippyPrimaryDark : .tippyTextSecondary)
+                        .frame(width: TippySpacing.xxl + TippySpacing.xs, height: TippySpacing.xxl + TippySpacing.xs)
+                        .foregroundStyle(isExpanded ? .tippyPrimary : .tippyTextSecondary)
 
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: TippySpacing.xs) {
                         Text(entry.title)
                             .font(.callout.weight(.semibold))
                             .foregroundStyle(.tippyText)
                         Text(entry.range)
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.tippyPrimaryDark)
+                            .foregroundStyle(.tippyPrimary)
                     }
 
                     Spacer()
@@ -105,41 +109,41 @@ private struct GuideCard: View {
                         .foregroundStyle(.tippyTextTertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(16)
+                .padding(TippySpacing.base)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: TippySpacing.md) {
                     Text(entry.text)
                         .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
-                        .lineSpacing(4)
+                        .lineSpacing(5)
 
-                    Text(entry.fallback)
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(.tippyPrimaryDark)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.tippyPrimaryLight)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    // Fallback tip badge
+                    HStack(spacing: TippySpacing.sm) {
+                        Image(systemName: "hand.thumbsup.fill")
+                            .font(.caption2)
+                        Text(entry.fallback)
+                            .font(.caption.weight(.semibold))
+                    }
+                    .foregroundStyle(.tippyPrimary)
+                    .padding(.horizontal, TippySpacing.md)
+                    .padding(.vertical, TippySpacing.sm)
+                    .background(Color.tippyPrimaryLight)
+                    .clipShape(RoundedRectangle(cornerRadius: TippyRadius.chip, style: .continuous))
                 }
-                .padding(.horizontal, 16)
-                .padding(.leading, 50)
-                .padding(.bottom, 16)
+                .padding(.horizontal, TippySpacing.base)
+                .padding(.leading, TippySpacing.xxl + TippySpacing.base + TippySpacing.xs)
+                .padding(.bottom, TippySpacing.base)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(Color.tippySurface)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(isExpanded ? Color.tippyPrimary : Color.tippyBorder, lineWidth: 1.5)
-        )
+        .tippyCard()
     }
 }
 
-// MARK: - Guide Icon (reuses service icons where possible, SF Symbols otherwise)
+// MARK: - Guide Icon
 
 private struct GuideIcon: View {
     let name: String

@@ -8,14 +8,14 @@ struct NoBillView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: TippySpacing.xl) {
                 // Back button
                 Button {
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.25)) {
                         state.currentScreen = .entry
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: TippySpacing.xs) {
                         Image(systemName: "chevron.left")
                             .font(.subheadline.weight(.semibold))
                         Text("Back")
@@ -24,67 +24,82 @@ struct NoBillView: View {
                     .foregroundStyle(.tippyTextSecondary)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                    Text("ADVICE MODE")
+                        .font(.tippyMono)
+                        .foregroundStyle(.tippyTextTertiary)
+                        .tracking(1.0)
+
                     Text("Describe the situation")
-                        .font(.custom("Georgia", size: 28, relativeTo: .title))
+                        .font(.tippyTitle)
                         .foregroundStyle(.tippyText)
 
                     Text("Tell us who you're tipping, how long you've used their service, what they usually charge — whatever feels relevant.")
                         .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
-                        .lineSpacing(3)
+                        .lineSpacing(4)
                 }
 
-                VStack(alignment: .trailing, spacing: 6) {
-                    TextEditor(text: $state.noBillText)
-                        .font(.callout)
-                        .frame(minHeight: 140)
-                        .padding(12)
-                        .scrollContentBackground(.hidden)
-                        .background(Color.tippySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Color.tippyBorder, lineWidth: 2)
-                        )
-                        .overlay(alignment: .topLeading) {
-                            if state.noBillText.isEmpty {
-                                Text("e.g., Holiday tip for my barber, I've been going for 2 years, haircut is usually $40")
-                                    .font(.callout)
-                                    .foregroundStyle(.tippyTextTertiary)
-                                    .padding(.horizontal, 17)
-                                    .padding(.top, 20)
-                                    .allowsHitTesting(false)
+                VStack(alignment: .leading, spacing: TippySpacing.sm) {
+                    Text("YOUR SITUATION")
+                        .font(.tippyLabel)
+                        .foregroundStyle(.tippyTextSecondary)
+                        .tracking(1.0)
+
+                    VStack(alignment: .trailing, spacing: TippySpacing.sm) {
+                        TextEditor(text: $state.noBillText)
+                            .font(.callout)
+                            .frame(minHeight: 140)
+                            .padding(TippySpacing.md)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.tippySurface)
+                            .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
+                                    .stroke(isFocused ? Color.tippyPrimary : Color.tippyBorder, lineWidth: isFocused ? 1.5 : 1)
+                            )
+                            .overlay(alignment: .topLeading) {
+                                if state.noBillText.isEmpty {
+                                    Text("e.g., Holiday tip for my barber, I've been going for 2 years, haircut is usually $40")
+                                        .font(.callout)
+                                        .foregroundStyle(.tippyTextTertiary)
+                                        .padding(.horizontal, TippySpacing.base)
+                                        .padding(.top, TippySpacing.lg)
+                                        .allowsHitTesting(false)
+                                }
                             }
-                        }
-                        .focused($isFocused)
+                            .focused($isFocused)
 
-                    Text("\(state.noBillText.count)/280")
-                        .font(.caption)
-                        .foregroundStyle(.tippyTextTertiary)
-                }
-                .onChange(of: state.noBillText) { _, newValue in
-                    if newValue.count > 280 {
-                        state.noBillText = String(newValue.prefix(280))
+                        Text("\(state.noBillText.count)/280")
+                            .font(.caption)
+                            .foregroundStyle(state.noBillText.count > 260 ? .tippyPrimary : .tippyTextTertiary)
+                    }
+                    .onChange(of: state.noBillText) { _, newValue in
+                        if newValue.count > 280 {
+                            state.noBillText = String(newValue.prefix(280))
+                        }
                     }
                 }
 
                 Button {
                     getAdvice()
                 } label: {
-                    Text("Get Advice")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(canAdvise ? Color.tippyText : Color.tippyText.opacity(0.3))
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    HStack {
+                        HStack(spacing: TippySpacing.sm) {
+                            Image(systemName: "sparkles")
+                            Text("Get Advice")
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.body.weight(.medium))
+                    }
+                    .tippyPrimaryButton(enabled: canAdvise)
                 }
                 .disabled(!canAdvise)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 80)
+            .padding(.horizontal, TippySpacing.xl)
+            .padding(.top, TippySpacing.base)
+            .padding(.bottom, TippySpacing.xxl)
         }
         .scrollDismissesKeyboard(.interactively)
     }
@@ -95,7 +110,7 @@ struct NoBillView: View {
 
     private func getAdvice() {
         isFocused = false
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.25)) {
             state.currentScreen = .loading
         }
 
@@ -118,7 +133,7 @@ struct NoBillView: View {
             state.selectedOption = .recommended
             state.feedbackGiven = nil
 
-            withAnimation(.easeInOut(duration: 0.4)) {
+            withAnimation(.easeInOut(duration: 0.3)) {
                 state.currentScreen = .result
             }
         }

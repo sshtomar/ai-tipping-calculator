@@ -2,7 +2,6 @@ import SwiftUI
 
 struct LoadingView: View {
     @State private var messageIndex = 0
-    @State private var dotScale: [CGFloat] = [0.4, 0.4, 0.4]
     @State private var rotation: Double = 0
 
     private let messages = [
@@ -17,56 +16,48 @@ struct LoadingView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 28) {
-            // Animated loading indicator
-            ZStack {
-                Circle()
-                    .stroke(Color.tippyBorder, lineWidth: 3)
-                    .frame(width: 60, height: 60)
-                
-                Circle()
-                    .trim(from: 0, to: 0.7)
-                    .stroke(
-                        Color.tippyPrimary,
-                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                    )
-                    .frame(width: 60, height: 60)
-                    .rotationEffect(.degrees(rotation))
-                
-                Image(systemName: "sparkles")
-                    .font(.title3)
-                    .foregroundStyle(.tippyPrimary)
-            }
-            .onAppear {
-                withAnimation(
-                    .linear(duration: 1.2)
-                    .repeatForever(autoreverses: false)
-                ) {
-                    rotation = 360
-                }
-            }
+        VStack(spacing: TippySpacing.xxl) {
+            // Single-arc spinner
+            Circle()
+                .trim(from: 0, to: 0.65)
+                .stroke(
+                    AngularGradient(
+                        colors: [.tippyPrimary, .tippyYellow, .tippySky, .tippyPrimary],
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                )
+                .frame(width: 40, height: 40)
+                .rotationEffect(.degrees(rotation))
 
+            // Message
             Text(messages[messageIndex])
                 .font(.subheadline)
                 .foregroundStyle(.tippyTextSecondary)
-                .italic()
                 .multilineTextAlignment(.center)
                 .contentTransition(.opacity)
-                .animation(.easeInOut(duration: 0.3), value: messageIndex)
-                .onAppear {
-                    messageIndex = Int.random(in: 0..<messages.count)
-                    scheduleMessageChange()
-                }
+                .animation(.easeInOut(duration: 0.25), value: messageIndex)
+                .padding(.horizontal, TippySpacing.xl)
         }
+        .padding(TippySpacing.xl)
+        .tippyCard()
+        .padding(.horizontal, TippySpacing.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.tippyBackground)
+        .onAppear {
+            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
+                rotation = 360
+            }
+            messageIndex = Int.random(in: 0..<messages.count)
+            scheduleMessageChange()
+        }
     }
 
     private func scheduleMessageChange() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             var next = Int.random(in: 0..<messages.count)
             while next == messageIndex { next = Int.random(in: 0..<messages.count) }
             messageIndex = next
+            scheduleMessageChange()
         }
     }
 }

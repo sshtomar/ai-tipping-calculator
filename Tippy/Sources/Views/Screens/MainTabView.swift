@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     var locationService: LocationService
@@ -10,22 +11,33 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             TipFlowView(state: tipState, locationService: locationService, usageLimiter: usageLimiter)
                 .tabItem {
-                    Label("Tip", systemImage: "dollarsign.circle.fill")
+                    Label("Tip", systemImage: "sparkles")
                 }
                 .tag(0)
 
             GuideView()
                 .tabItem {
-                    Label("Guide", systemImage: "book.fill")
+                    Label("Guide", systemImage: "book.pages.fill")
                 }
                 .tag(1)
 
             HistoryView()
                 .tabItem {
-                    Label("History", systemImage: "clock.fill")
+                    Label("History", systemImage: "clock.arrow.circlepath")
                 }
                 .tag(2)
         }
-        .tint(Color.tippyPrimaryDark)
+        .tint(Color.tippyPrimary)
+        .onAppear(perform: configureTabBarAppearance)
+    }
+
+    private func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.tippySurface)
+        appearance.shadowColor = UIColor(Color.tippyBorder)
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }

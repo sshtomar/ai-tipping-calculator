@@ -21,7 +21,7 @@ struct TippyApp: App {
                     }
             } else {
                 OnboardingView {
-                    withAnimation(.easeInOut(duration: 0.4)) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
                         hasOnboarded = true
                     }
                 }

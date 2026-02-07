@@ -45,6 +45,15 @@ final class TipState {
         }
     }
 
+    var currentTipPercent: Int {
+        guard let result, !result.isRange else { return 0 }
+        switch selectedOption {
+        case .lower: return result.lowerPercent
+        case .recommended: return result.recommendedPercent
+        case .higher: return result.higherPercent
+        }
+    }
+
     var currentTotal: Double {
         guard let result, !result.isRange else { return 0 }
         return result.billAmount + Double(currentTipDollars)

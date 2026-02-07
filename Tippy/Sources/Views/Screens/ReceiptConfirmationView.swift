@@ -4,16 +4,16 @@ struct ReceiptConfirmationView: View {
     @Bindable var state: TipState
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: TippySpacing.xl) {
             // Back button
             HStack {
                 Button {
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.25)) {
                         state.pendingScanResult = nil
                         state.currentScreen = .entry
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: TippySpacing.xs) {
                         Image(systemName: "chevron.left")
                             .font(.subheadline.weight(.semibold))
                         Text("Back")
@@ -24,9 +24,14 @@ struct ReceiptConfirmationView: View {
                 Spacer()
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: TippySpacing.sm) {
+                Text("RECEIPT SCAN")
+                    .font(.tippyMono)
+                    .foregroundStyle(.tippyTextTertiary)
+                    .tracking(1.0)
+
                 Text("Confirm the amount")
-                    .font(.custom("Georgia", size: 28, relativeTo: .title))
+                    .font(.tippyTitle)
                     .foregroundStyle(.tippyText)
 
                 Text("We found a few numbers on your receipt. Which one is the total?")
@@ -36,29 +41,28 @@ struct ReceiptConfirmationView: View {
             }
 
             if let scanResult = state.pendingScanResult {
-                // Primary detected amount
-                VStack(spacing: 6) {
-                    Text("Best match")
-                        .font(.caption2.bold())
-                        .foregroundStyle(.tippyPrimaryDark)
-                        .textCase(.uppercase)
-                        .tracking(0.6)
+                // Primary amount
+                VStack(spacing: TippySpacing.sm) {
+                    Text("BEST MATCH")
+                        .font(.tippyLabel)
+                        .foregroundStyle(.tippyPrimary)
+                        .tracking(1.2)
 
                     Text("$\(scanResult.amount, specifier: "%.2f")")
-                        .font(.custom("Georgia", size: 42, relativeTo: .largeTitle))
+                        .font(.tippyHero)
                         .foregroundStyle(.tippyText)
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, TippySpacing.sm)
 
-                // Alternative amounts
+                // Alternatives
                 if scanResult.allAmounts.count > 1 {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("OTHER AMOUNTS FOUND")
+                    VStack(alignment: .leading, spacing: TippySpacing.md) {
+                        Text("OTHER AMOUNTS")
                             .font(.tippyLabel)
                             .foregroundStyle(.tippyTextSecondary)
-                            .tracking(0.8)
+                            .tracking(1.0)
 
-                        FlowLayout(spacing: 8) {
+                        FlowLayout(spacing: TippySpacing.sm) {
                             ForEach(scanResult.allAmounts.dropFirst(), id: \.self) { amount in
                                 Button {
                                     selectAmount(amount, from: scanResult)
@@ -66,13 +70,9 @@ struct ReceiptConfirmationView: View {
                                     Text("$\(amount, specifier: "%.2f")")
                                         .font(.subheadline.weight(.medium))
                                         .foregroundStyle(.tippyText)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 10)
-                                        .background(Color.tippySurface)
-                                        .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule().stroke(Color.tippyBorder, lineWidth: 1.5)
-                                        )
+                                        .padding(.horizontal, TippySpacing.base)
+                                        .padding(.vertical, TippySpacing.sm)
+                                        .overlay(Capsule().stroke(Color.tippyBorder, lineWidth: 1))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -82,24 +82,23 @@ struct ReceiptConfirmationView: View {
 
                 Spacer()
 
-                // Use this amount
                 Button {
                     selectAmount(scanResult.amount, from: scanResult)
                 } label: {
-                    Text("Use this amount")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.tippyPrimary)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    HStack {
+                        Text("Use this amount")
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.body.weight(.medium))
+                    }
+                    .tippyPrimaryButton()
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 20)
+        .padding(.horizontal, TippySpacing.xl)
+        .padding(.top, TippySpacing.base)
+        .padding(.bottom, TippySpacing.xl)
     }
 
     private func selectAmount(_ amount: Double, from scanResult: ReceiptScanner.ScanResult) {
@@ -117,7 +116,7 @@ struct ReceiptConfirmationView: View {
         }
 
         state.pendingScanResult = nil
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.25)) {
             state.currentScreen = .entry
         }
     }
