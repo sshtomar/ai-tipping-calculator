@@ -16,6 +16,8 @@ struct ReceiptScanner {
         var detectedServiceType: ServiceType?
         var numberOfGuests: Int?
         var venueName: String?
+        var autoGratuityIncluded: Bool?
+        var autoGratuityAmount: Double?
         var source: ScanSource = .onDeviceOCR
     }
 
@@ -40,6 +42,8 @@ struct ReceiptScanner {
             detectedServiceType: analysis.serviceType,
             numberOfGuests: analysis.numberOfGuests,
             venueName: analysis.venueName,
+            autoGratuityIncluded: analysis.autoGratuityIncluded,
+            autoGratuityAmount: analysis.autoGratuityAmount,
             source: .claudeVision
         )
     }

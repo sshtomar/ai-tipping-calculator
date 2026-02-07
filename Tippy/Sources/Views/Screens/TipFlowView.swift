@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TipFlowView: View {
     @Bindable var state: TipState
+    var locationService: LocationService
+    var usageLimiter: UsageLimiter
 
     var body: some View {
         NavigationStack {
@@ -13,16 +15,19 @@ struct TipFlowView: View {
                     EntryView(state: state)
                         .transition(.move(edge: .leading).combined(with: .opacity))
                 case .noBill:
-                    NoBillView(state: state)
+                    NoBillView(state: state, locationService: locationService, usageLimiter: usageLimiter)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 case .context:
-                    ContextView(state: state)
+                    ContextView(state: state, locationService: locationService, usageLimiter: usageLimiter)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 case .loading:
                     LoadingView()
                         .transition(.opacity)
                 case .result:
-                    ResultView(state: state)
+                    ResultView(state: state, usageLimiter: usageLimiter)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                case .receiptConfirmation:
+                    ReceiptConfirmationView(state: state)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }

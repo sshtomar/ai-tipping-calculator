@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ContextView: View {
     @Bindable var state: TipState
+    var locationService: LocationService
+    var usageLimiter: UsageLimiter
 
     var body: some View {
         ScrollView {
@@ -14,21 +16,29 @@ struct ContextView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                         Text("Back")
                     }
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                     .foregroundStyle(.tippyTextSecondary)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Any context?")
-                        .font(.custom("Georgia", size: 28))
+                        .font(.custom("Georgia", size: 28, relativeTo: .title))
                         .foregroundStyle(.tippyText)
 
                     Text("Totally optional — but it helps dial in the tip.")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
+                    
+                    // Show selected count
+                    if !state.contextTags.isEmpty {
+                        Text("\(state.contextTags.count) selected")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.tippyPrimaryDark)
+                            .padding(.top, 2)
+                    }
                 }
 
                 // Context chips
@@ -36,7 +46,7 @@ struct ContextView: View {
                     GridItem(.flexible(), spacing: 10),
                     GridItem(.flexible(), spacing: 10),
                 ], spacing: 10) {
-                    ForEach(ContextTag.allCases) { tag in
+                    ForEach(ContextTag.tags(for: state.serviceType ?? .other)) { tag in
                         ContextChip(
                             tag: tag,
                             isSelected: state.contextTags.contains(tag)
@@ -60,7 +70,7 @@ struct ContextView: View {
                         .tracking(0.8)
 
                     TextField("e.g., it's raining, they stayed open late", text: $state.freeText)
-                        .font(.system(size: 16))
+                        .font(.callout)
                         .padding(14)
                         .background(Color.tippySurface)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -79,7 +89,7 @@ struct ContextView: View {
                         Image(systemName: "sparkles")
                         Text("Get My Tip")
                     }
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -93,7 +103,7 @@ struct ContextView: View {
                     calculate()
                 } label: {
                     Text("Skip — just calculate →")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
@@ -104,24 +114,40 @@ struct ContextView: View {
             .padding(.bottom, 80)
         }
         .scrollDismissesKeyboard(.interactively)
+        .onAppear {
+            let valid = Set(ContextTag.tags(for: state.serviceType ?? .other))
+            state.contextTags = state.contextTags.intersection(valid)
+        }
     }
 
     private func calculate() {
+        guard let amount = state.parsedAmount,
+              let serviceType = state.serviceType else { return }
+
         withAnimation {
             state.currentScreen = .loading
         }
 
-        let delay = Double.random(in: 0.8...1.6)
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            guard let amount = state.parsedAmount,
-                  let serviceType = state.serviceType else { return }
+        let startTime = Date()
 
-            state.result = TipEngine.calculate(
+        Task {
+            let result = await TipCoordinator.calculate(
                 amount: amount,
                 serviceType: serviceType,
                 tags: state.contextTags,
-                freeText: state.freeText
+                freeText: state.freeText,
+                city: locationService.city,
+                state: locationService.state,
+                usageLimiter: usageLimiter
             )
+
+            // Ensure minimum 0.5s loading display
+            let elapsed = Date().timeIntervalSince(startTime)
+            if elapsed < 0.5 {
+                try? await Task.sleep(for: .seconds(0.5 - elapsed))
+            }
+
+            state.result = result
             state.selectedOption = .recommended
             state.splitCount = 1
             state.isDiscreet = false
@@ -145,9 +171,9 @@ struct ContextChip: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: tag.iconName)
-                    .font(.system(size: 13))
+                    .font(.footnote)
                 Text(tag.displayName)
-                    .font(.system(size: 14))
+                    .font(.subheadline)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
@@ -211,5 +237,5 @@ struct FlowLayout: Layout {
     let state = TipState()
     state.amount = "142"
     state.serviceType = .restaurant
-    return ContextView(state: state)
+    return ContextView(state: state, locationService: LocationService(), usageLimiter: UsageLimiter())
 }

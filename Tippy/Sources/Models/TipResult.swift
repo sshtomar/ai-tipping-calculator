@@ -12,6 +12,7 @@ struct TipResult: Equatable {
     let billAmount: Double
     let isRange: Bool
     let rangeText: String?
+    let isOffline: Bool
 
     init(
         recommendedDollars: Int,
@@ -22,7 +23,8 @@ struct TipResult: Equatable {
         higherPercent: Int,
         explanation: String,
         totalWithTip: Double,
-        billAmount: Double
+        billAmount: Double,
+        isOffline: Bool = true
     ) {
         self.recommendedDollars = recommendedDollars
         self.recommendedPercent = recommendedPercent
@@ -35,9 +37,10 @@ struct TipResult: Equatable {
         self.billAmount = billAmount
         self.isRange = false
         self.rangeText = nil
+        self.isOffline = isOffline
     }
 
-    init(rangeText: String, explanation: String) {
+    init(rangeText: String, explanation: String, isOffline: Bool = true) {
         self.recommendedDollars = 0
         self.recommendedPercent = 0
         self.lowerDollars = 0
@@ -49,6 +52,7 @@ struct TipResult: Equatable {
         self.billAmount = 0
         self.isRange = true
         self.rangeText = rangeText
+        self.isOffline = isOffline
     }
 }
 

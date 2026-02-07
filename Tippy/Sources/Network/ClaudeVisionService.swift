@@ -7,9 +7,12 @@ struct ReceiptAnalysis {
     var serviceType: ServiceType?
     var numberOfGuests: Int?
     var venueName: String?
+    var autoGratuityIncluded: Bool?
+    var autoGratuityAmount: Double?
 }
 
 enum ClaudeVisionError: Error {
+    case noAPIKey
     case imageCompressionFailed
     case networkError(Error)
     case httpError(statusCode: Int)
@@ -21,6 +24,9 @@ enum ClaudeVisionError: Error {
 enum ClaudeVisionService {
 
     static func analyzeReceipt(image: UIImage) async throws -> ReceiptAnalysis {
+        guard let apiKey = ClaudeAPIConfig.apiKey else {
+            throw ClaudeVisionError.noAPIKey
+        }
         guard let jpeg = image.jpegData(compressionQuality: ClaudeAPIConfig.jpegQuality) else {
             throw ClaudeVisionError.imageCompressionFailed
         }
@@ -52,6 +58,8 @@ enum ClaudeVisionService {
                             - "serviceType": one of "restaurant","bar","cafe","delivery","rideshare","salon","spa","tattoo","valet","hotel","movers","other" or null
                             - "numberOfGuests": integer or null (look for guest/cover count)
                             - "venueName": string or null
+                            - "autoGratuityIncluded": boolean or null (true if gratuity/service charge is already added)
+                            - "autoGratuityAmount": number or null (the gratuity/service charge amount if included)
                             Return ONLY valid JSON, no markdown, no explanation.
                             """
                         ]
@@ -63,7 +71,7 @@ enum ClaudeVisionService {
         var request = URLRequest(url: ClaudeAPIConfig.endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(ClaudeAPIConfig.apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue(ClaudeAPIConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
         request.timeoutInterval = ClaudeAPIConfig.timeoutSeconds
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -121,7 +129,9 @@ enum ClaudeVisionService {
             tax: parsed["tax"] as? Double,
             serviceType: serviceType,
             numberOfGuests: parsed["numberOfGuests"] as? Int,
-            venueName: parsed["venueName"] as? String
+            venueName: parsed["venueName"] as? String,
+            autoGratuityIncluded: parsed["autoGratuityIncluded"] as? Bool,
+            autoGratuityAmount: parsed["autoGratuityAmount"] as? Double
         )
     }
 }

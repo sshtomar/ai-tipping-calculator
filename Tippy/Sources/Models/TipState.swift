@@ -14,11 +14,17 @@ final class TipState {
     var isDiscreet: Bool = false
     var feedbackGiven: String?
 
+    // Auto-gratuity detection (F5)
+    var autoGratuityAmount: Double?
+
+    // Receipt confirmation (F6)
+    var pendingScanResult: ReceiptScanner.ScanResult?
+
     // Navigation
     var currentScreen: Screen = .entry
 
     enum Screen {
-        case entry, noBill, context, loading, result
+        case entry, noBill, context, loading, result, receiptConfirmation
     }
 
     var parsedAmount: Double? {
@@ -60,6 +66,8 @@ final class TipState {
         splitCount = 1
         isDiscreet = false
         feedbackGiven = nil
+        autoGratuityAmount = nil
+        pendingScanResult = nil
         currentScreen = .entry
     }
 }

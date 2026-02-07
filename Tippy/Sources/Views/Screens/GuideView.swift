@@ -20,10 +20,10 @@ struct GuideView: View {
                     // Header
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Tippy")
-                            .font(.custom("Georgia", size: 32))
+                            .font(.custom("Georgia", size: 32, relativeTo: .largeTitle))
                             .foregroundStyle(.tippyText)
                         Text("Your pocket tipping reference")
-                            .font(.system(size: 15))
+                            .font(.subheadline)
                             .foregroundStyle(.tippyTextSecondary)
                     }
                     .padding(.top, 8)
@@ -33,7 +33,7 @@ struct GuideView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(.tippyTextTertiary)
                         TextField("Search (e.g., barber, hotel, movers)", text: $searchText)
-                            .font(.system(size: 16))
+                            .font(.callout)
                     }
                     .padding(14)
                     .background(Color.tippySurface)
@@ -47,9 +47,9 @@ struct GuideView: View {
                     if filteredEntries.isEmpty {
                         VStack(spacing: 8) {
                             Text("No results")
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.callout.weight(.medium))
                             Text("Try a different search term")
-                                .font(.system(size: 14))
+                                .font(.subheadline)
                                 .foregroundStyle(.tippyTextTertiary)
                         }
                         .frame(maxWidth: .infinity)
@@ -91,17 +91,17 @@ private struct GuideCard: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(entry.title)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.tippyText)
                         Text(entry.range)
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.subheadline.weight(.medium))
                             .foregroundStyle(.tippyPrimaryDark)
                     }
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(.tippyTextTertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
@@ -112,12 +112,12 @@ private struct GuideCard: View {
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(entry.text)
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
                         .lineSpacing(4)
 
                     Text(entry.fallback)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.footnote.weight(.medium))
                         .foregroundStyle(.tippyPrimaryDark)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
@@ -149,7 +149,7 @@ private struct GuideIcon: View {
             ServiceIcon(type: serviceType, size: 28)
         } else {
             Image(systemName: sfSymbol(for: name))
-                .font(.system(size: 20))
+                .font(.title3)
         }
     }
 

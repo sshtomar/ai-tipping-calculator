@@ -29,5 +29,6 @@ targets:
         GENERATE_INFOPLIST_FILE: true
         INFOPLIST_KEY_CFBundleDisplayName: Tippy
         INFOPLIST_KEY_NSCameraUsageDescription: "Tippy uses your camera to scan receipts and read the bill total."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Tippy uses your approximate location to tailor tip recommendations to local customs."
         CODE_SIGN_IDENTITY: ""
         CODE_SIGNING_REQUIRED: "NO"

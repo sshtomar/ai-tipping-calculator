@@ -26,19 +26,33 @@ struct TipEngine {
         freeText: String
     ) -> TipResult {
         if let flat = flatTips[serviceType] {
-            return flatTipResult(billAmount: amount, flat: flat, serviceType: serviceType)
+            return flatTipResult(billAmount: amount, flat: flat, serviceType: serviceType, tags: tags)
         }
 
         let baseRate = baseRates[serviceType] ?? 0.20
         var adjustment: Double = 0
 
+        // Universal tags
         if tags.contains(.outstandingService) { adjustment += 0.04 }
         if tags.contains(.poorService) { adjustment -= 0.05 }
         if tags.contains(.holidaySeason) { adjustment += 0.03 }
+
+        // Restaurant/bar/cafe tags
         if tags.contains(.largeGroup) { adjustment += 0.02 }
         if tags.contains(.takeout) { adjustment -= 0.07 }
         if tags.contains(.buffet) { adjustment -= 0.06 }
         if tags.contains(.dateNight) { adjustment += 0.01 }
+
+        // Service-specific tags
+        if tags.contains(.badWeather) { adjustment += 0.03 }
+        if tags.contains(.largeOrder) { adjustment += 0.02 }
+        if tags.contains(.lateNight) { adjustment += 0.03 }
+        if tags.contains(.longRide) { adjustment += 0.02 }
+        if tags.contains(.helpedWithBags) { adjustment += 0.02 }
+        if tags.contains(.complexStyle) { adjustment += 0.03 }
+        if tags.contains(.regularClient) { adjustment += 0.02 }
+        if tags.contains(.longSession) { adjustment += 0.02 }
+        if tags.contains(.complexDesign) { adjustment += 0.03 }
 
         let lower = freeText.lowercased()
         if lower.contains("rain") || lower.contains("snow") || lower.contains("storm") || lower.contains("weather") {
@@ -156,29 +170,47 @@ struct TipEngine {
         return TipResult(rangeText: "$20–50", explanation: "Without more details, that's a reasonable range for most personal service tips. Adjust up if they go above and beyond.")
     }
 
-    private static func flatTipResult(billAmount: Double, flat: Int, serviceType: ServiceType) -> TipResult {
-        let lower = max(1, flat - 2)
-        let higher = flat + 3
+    private static func flatTipResult(billAmount: Double, flat: Int, serviceType: ServiceType, tags: Set<ContextTag>) -> TipResult {
+        var adjusted = flat
+
+        // Universal tag adjustments
+        if tags.contains(.outstandingService) { adjusted += 3 }
+        if tags.contains(.poorService) { adjusted -= 2 }
+        if tags.contains(.holidaySeason) { adjusted += 2 }
+
+        // Service-specific dollar adjustments
+        if tags.contains(.badWeather) { adjusted += 2 }
+        if tags.contains(.specialEvent) { adjusted += 2 }
+        if tags.contains(.multiNight) { adjusted += 2 }
+        if tags.contains(.extraRequests) { adjusted += 2 }
+        if tags.contains(.stairs) { adjusted += 5 }
+        if tags.contains(.heavyItems) { adjusted += 5 }
+        if tags.contains(.longMove) { adjusted += 5 }
+
+        adjusted = max(1, adjusted)
+
+        let lower = max(1, adjusted - 2)
+        let higher = adjusted + 3
 
         let explanations: [ServiceType: String] = [
-            .valet: "$\(flat) is standard for valet. Straightforward — hand it over with the ticket.",
-            .hotel: "$\(flat) per night is the standard for hotel housekeeping. Leave it on the pillow with a note so they know it's for them.",
-            .movers: "$\(flat) per mover is the sweet spot. If they handled stairs or heavy furniture, lean higher.",
+            .valet: "$\(adjusted) is standard for valet. Straightforward — hand it over with the ticket.",
+            .hotel: "$\(adjusted) per night is the standard for hotel housekeeping. Leave it on the pillow with a note so they know it's for them.",
+            .movers: "$\(adjusted) per mover is the sweet spot. If they handled stairs or heavy furniture, lean higher.",
         ]
 
-        let pct = billAmount > 0 ? Int(round(Double(flat) / billAmount * 100)) : 0
+        let pct = billAmount > 0 ? Int(round(Double(adjusted) / billAmount * 100)) : 0
         let lowerPct = billAmount > 0 ? Int(round(Double(lower) / billAmount * 100)) : 0
         let higherPct = billAmount > 0 ? Int(round(Double(higher) / billAmount * 100)) : 0
 
         return TipResult(
-            recommendedDollars: flat,
+            recommendedDollars: adjusted,
             recommendedPercent: pct,
             lowerDollars: lower,
             lowerPercent: lowerPct,
             higherDollars: higher,
             higherPercent: higherPct,
-            explanation: explanations[serviceType] ?? "$\(flat) is the standard flat tip for this service.",
-            totalWithTip: billAmount + Double(flat),
+            explanation: explanations[serviceType] ?? "$\(adjusted) is the standard flat tip for this service.",
+            totalWithTip: billAmount + Double(adjusted),
             billAmount: billAmount
         )
     }

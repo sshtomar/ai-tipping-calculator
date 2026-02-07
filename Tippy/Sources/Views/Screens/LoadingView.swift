@@ -3,6 +3,7 @@ import SwiftUI
 struct LoadingView: View {
     @State private var messageIndex = 0
     @State private var dotScale: [CGFloat] = [0.4, 0.4, 0.4]
+    @State private var rotation: Double = 0
 
     private let messages = [
         "Consulting the Bistromathic Drive...",
@@ -17,18 +18,36 @@ struct LoadingView: View {
 
     var body: some View {
         VStack(spacing: 28) {
-            HStack(spacing: 10) {
-                ForEach(0..<3, id: \.self) { i in
-                    Circle()
-                        .fill(Color.tippyPrimary)
-                        .frame(width: 10, height: 10)
-                        .scaleEffect(dotScale[i])
+            // Animated loading indicator
+            ZStack {
+                Circle()
+                    .stroke(Color.tippyBorder, lineWidth: 3)
+                    .frame(width: 60, height: 60)
+                
+                Circle()
+                    .trim(from: 0, to: 0.7)
+                    .stroke(
+                        Color.tippyPrimary,
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .frame(width: 60, height: 60)
+                    .rotationEffect(.degrees(rotation))
+                
+                Image(systemName: "sparkles")
+                    .font(.title3)
+                    .foregroundStyle(.tippyPrimary)
+            }
+            .onAppear {
+                withAnimation(
+                    .linear(duration: 1.2)
+                    .repeatForever(autoreverses: false)
+                ) {
+                    rotation = 360
                 }
             }
-            .onAppear { startAnimation() }
 
             Text(messages[messageIndex])
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .foregroundStyle(.tippyTextSecondary)
                 .italic()
                 .multilineTextAlignment(.center)
@@ -41,18 +60,6 @@ struct LoadingView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.tippyBackground)
-    }
-
-    private func startAnimation() {
-        for i in 0..<3 {
-            withAnimation(
-                .easeInOut(duration: 0.5)
-                .repeatForever(autoreverses: true)
-                .delay(Double(i) * 0.15)
-            ) {
-                dotScale[i] = 1.0
-            }
-        }
     }
 
     private func scheduleMessageChange() {

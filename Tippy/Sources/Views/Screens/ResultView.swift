@@ -2,7 +2,9 @@ import SwiftUI
 
 struct ResultView: View {
     @Bindable var state: TipState
+    var usageLimiter: UsageLimiter?
     @State private var appeared = false
+    @State private var showUpgrade = false
 
     var body: some View {
         ScrollView {
@@ -22,9 +24,27 @@ struct ResultView: View {
                     }
                 } label: {
                     Text("← Start over")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
                         .padding(.vertical, 12)
+                }
+                
+                // Edit amount button
+                if let result = state.result, !result.isRange {
+                    Button {
+                        withAnimation {
+                            state.currentScreen = .entry
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "pencil")
+                                .font(.caption)
+                            Text("Edit amount or context")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.tippyTextTertiary)
+                        .padding(.vertical, 8)
+                    }
                 }
             }
             .padding(.horizontal, 20)
@@ -42,19 +62,27 @@ struct ResultView: View {
 
     @ViewBuilder
     private func rangeResult(_ result: TipResult) -> some View {
+        if result.isOffline {
+            offlineBadge()
+        }
+
+        if let limiter = usageLimiter, limiter.showUpgradePrompt && result.isOffline {
+            upgradeBanner()
+        }
+
         VStack(spacing: 16) {
             Text("Recommended")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.caption2.bold())
                 .foregroundStyle(.tippyPrimaryDark)
                 .textCase(.uppercase)
                 .tracking(0.6)
 
             Text(result.rangeText ?? "")
-                .font(.custom("Georgia", size: 38))
+                .font(.custom("Georgia", size: 38, relativeTo: .largeTitle))
                 .foregroundStyle(.tippyText)
 
             Text(result.explanation)
-                .font(.system(size: 16))
+                .font(.callout)
                 .foregroundStyle(.tippyTextSecondary)
                 .lineSpacing(4)
                 .padding(20)
@@ -69,7 +97,85 @@ struct ResultView: View {
     // MARK: - Full Result
 
     @ViewBuilder
+    private func offlineBadge() -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "wifi.slash")
+                .font(.caption2)
+            Text("Offline estimate")
+                .font(.caption2.weight(.medium))
+        }
+        .foregroundStyle(.tippyTextTertiary)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.tippySurfaceSecondary)
+        .clipShape(Capsule())
+    }
+
+    @ViewBuilder
+    private func upgradeBanner() -> some View {
+        VStack(spacing: 10) {
+            Text("You've used your 3 free AI tips today")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.tippyText)
+            Button {
+                showUpgrade = true
+            } label: {
+                Text("Upgrade to Tippy Pro")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.tippyYellow)
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(Color.tippyYellow.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.tippyYellow.opacity(0.3), lineWidth: 1.5)
+        )
+        .sheet(isPresented: $showUpgrade) {
+            UpgradeView()
+        }
+    }
+
+    @ViewBuilder
+    private func autoGratuityBanner() -> some View {
+        if let gratuity = state.autoGratuityAmount {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.tippyYellow)
+                Text("Auto-gratuity of $\(gratuity, specifier: "%.2f") already included")
+                    .font(.subheadline)
+                    .foregroundStyle(.tippyText)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.tippyYellow.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.tippyYellow.opacity(0.3), lineWidth: 1.5)
+            )
+        }
+    }
+
+    @ViewBuilder
     private func fullResult(_ result: TipResult) -> some View {
+        if result.isOffline {
+            offlineBadge()
+        }
+
+        if let limiter = usageLimiter, limiter.showUpgradePrompt && result.isOffline {
+            upgradeBanner()
+        }
+
+        autoGratuityBanner()
+
         // Three options
         HStack(spacing: 10) {
             tipOption(
@@ -107,7 +213,7 @@ struct ResultView: View {
 
         // Explanation
         Text(result.explanation)
-            .font(.system(size: 16))
+            .font(.callout)
             .foregroundStyle(.tippyTextSecondary)
             .lineSpacing(4)
             .padding(20)
@@ -119,11 +225,11 @@ struct ResultView: View {
         // Total with tip
         HStack {
             Text("Total with tip")
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .foregroundStyle(.tippyTextSecondary)
             Spacer()
             Text("$\(state.currentTotal, specifier: "%.2f")")
-                .font(.custom("Georgia", size: 22))
+                .font(.custom("Georgia", size: 22, relativeTo: .title2))
                 .foregroundStyle(.tippyText)
                 .blur(radius: state.isDiscreet ? 12 : 0)
         }
@@ -134,7 +240,7 @@ struct ResultView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Split the bill")
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                     .foregroundStyle(.tippyTextSecondary)
                 Spacer()
                 HStack(spacing: 4) {
@@ -142,7 +248,7 @@ struct ResultView: View {
                         if state.splitCount > 1 { state.splitCount -= 1 }
                     }
                     Text("\(state.splitCount)")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .frame(minWidth: 32)
                     stepperButton("plus") {
                         if state.splitCount < 20 { state.splitCount += 1 }
@@ -156,11 +262,11 @@ struct ResultView: View {
 
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("$\(state.perPersonAmount, specifier: "%.2f")")
-                        .font(.custom("Georgia", size: 24))
+                        .font(.custom("Georgia", size: 24, relativeTo: .title2))
                         .foregroundStyle(.tippyText)
                         .blur(radius: state.isDiscreet ? 12 : 0)
                     Text("per person")
-                        .font(.system(size: 14))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -173,23 +279,26 @@ struct ResultView: View {
 
         // Actions
         HStack(spacing: 10) {
-            actionButton(icon: "doc.on.doc", label: "Copy amount") {
-                UIPasteboard.general.string = "\(state.currentTipDollars)"
+            actionButton(icon: "doc.on.doc", label: "Copy") {
+                UIPasteboard.general.string = "$\(state.currentTipDollars)"
             }
             actionButton(
                 icon: state.isDiscreet ? "eye.slash" : "eye",
-                label: "Discreet mode"
+                label: "Discreet"
             ) {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     state.isDiscreet.toggle()
                 }
+            }
+            actionButton(icon: "square.and.arrow.up", label: "Share") {
+                shareResult()
             }
         }
 
         // Feedback
         VStack(spacing: 12) {
             Text("How'd we do?")
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundStyle(.tippyTextTertiary)
 
             HStack(spacing: 10) {
@@ -216,18 +325,21 @@ struct ResultView: View {
         }) {
             VStack(spacing: 6) {
                 Text(label.uppercased())
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.bold())
                     .tracking(0.5)
                     .foregroundStyle(isSelected && isPrimary ? .tippyPrimaryDark : .tippyTextTertiary)
                     .padding(.top, 4)
 
                 Text("$\(dollars)")
-                    .font(.custom("Georgia", size: isPrimary ? 36 : 24))
+                    .font(isPrimary
+                        ? .custom("Georgia", size: 36, relativeTo: .largeTitle)
+                        : .custom("Georgia", size: 24, relativeTo: .title2)
+                    )
                     .foregroundStyle(.tippyText)
                     .blur(radius: state.isDiscreet ? 12 : 0)
 
                 Text("\(percent)%")
-                    .font(.system(size: isPrimary ? 16 : 14, weight: isPrimary ? .medium : .regular))
+                    .font(isPrimary ? .callout.weight(.medium) : .subheadline)
                     .foregroundStyle(.tippyTextSecondary)
                     .blur(radius: state.isDiscreet ? 8 : 0)
                     .padding(.bottom, 4)
@@ -250,7 +362,7 @@ struct ResultView: View {
     private func stepperButton(_ symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 14, weight: .medium))
+                .font(.subheadline.weight(.medium))
                 .frame(width: 36, height: 36)
                 .background(Color.tippyBackground)
                 .foregroundStyle(.tippyText)
@@ -266,9 +378,9 @@ struct ResultView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                 Text(label)
-                    .font(.system(size: 14))
+                    .font(.subheadline)
             }
             .foregroundStyle(.tippyTextSecondary)
             .frame(maxWidth: .infinity)
@@ -290,7 +402,7 @@ struct ResultView: View {
             saveFeedback(value)
         } label: {
             Text(label)
-                .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                .font(.subheadline.weight(isSelected ? .semibold : .regular))
                 .foregroundStyle(isSelected ? .tippyGreen : .tippyTextSecondary)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 10)
@@ -313,6 +425,28 @@ struct ResultView: View {
             "date": ISO8601DateFormatter().string(from: Date()),
         ])
         UserDefaults.standard.set(history, forKey: key)
+    }
+    
+    private func shareResult() {
+        guard let result = state.result else { return }
+        let text = """
+        Tip: $\(state.currentTipDollars) (\(result.recommendedPercent)%)
+        Total: $\(String(format: "%.2f", state.currentTotal))
+        
+        Calculated with Tippy
+        """
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [text],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            activityVC.popoverPresentationController?.sourceView = rootVC.view
+            rootVC.present(activityVC, animated: true)
+        }
     }
 }
 

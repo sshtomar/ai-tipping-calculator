@@ -15,34 +15,34 @@ struct OnboardingView: View {
                 VStack(spacing: 20) {
                     // Lightbulb icon
                     Image(systemName: "lightbulb.max")
-                        .font(.system(size: 44, weight: .light))
+                        .font(.system(.largeTitle).weight(.light))
                         .foregroundStyle(.tippyPrimary)
                         .symbolEffect(.pulse, options: .repeating, isActive: appeared)
 
                     Text("Tippy")
-                        .font(.custom("Georgia", size: 52))
+                        .font(.custom("Georgia", size: 52, relativeTo: .largeTitle))
                         .foregroundStyle(.tippyText)
 
                     VStack(spacing: 6) {
                         Text("Nobody knows how to tip anymore.")
-                            .font(.system(size: 20, weight: .medium))
+                            .font(.title3.weight(.medium))
                         Text("Now you do.")
-                            .font(.system(size: 20, weight: .medium))
+                            .font(.title3.weight(.medium))
                     }
                     .foregroundStyle(.tippyText)
                     .multilineTextAlignment(.center)
 
                     Text("Enter your bill, tell us the situation, and get a single confident answer — not a percentage slider.")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(.tippyTextSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
 
                     HStack(spacing: 8) {
                         Image(systemName: "lock.fill")
-                            .font(.system(size: 12))
+                            .font(.caption)
                         Text("Your tips and data never leave this device.")
-                            .font(.system(size: 13))
+                            .font(.footnote)
                     }
                     .foregroundStyle(.tippyTextTertiary)
                     .padding(.horizontal, 16)
@@ -57,7 +57,7 @@ struct OnboardingView: View {
 
                 Button(action: onComplete) {
                     Text("Get Started")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
