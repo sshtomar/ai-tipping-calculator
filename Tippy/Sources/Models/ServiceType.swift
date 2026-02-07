@@ -34,6 +34,23 @@ enum ServiceType: String, CaseIterable, Identifiable, Codable {
     }
 
     var iconName: String { rawValue }
+
+    var sfSymbol: String {
+        switch self {
+        case .restaurant: "fork.knife"
+        case .bar: "wineglass"
+        case .cafe: "cup.and.saucer"
+        case .delivery: "shippingbox"
+        case .rideshare: "car"
+        case .salon: "scissors"
+        case .spa: "leaf"
+        case .tattoo: "paintbrush.pointed"
+        case .valet: "key"
+        case .hotel: "bed.double"
+        case .movers: "box.truck"
+        case .other: "sparkles"
+        }
+    }
 }
 
 enum ContextTag: String, CaseIterable, Identifiable, Codable {

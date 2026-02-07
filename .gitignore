@@ -13,3 +13,7 @@ DerivedData/
 
 # Build
 build/
+
+# Secrets
+.env
+test-receipt.png

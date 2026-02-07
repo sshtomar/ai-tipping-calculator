@@ -13,6 +13,7 @@
 		34E27AFA799472DA9A4DB491 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D69A2CC77217C0F7D20D5C52 /* ResultView.swift */; };
 		48137326580AD1DAA105677A /* TipFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD6FA5E9A3EAB62D237038E1 /* TipFlowView.swift */; };
 		53A1A4AC0F9757144ACC8775 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BD399816C5F74FC41488D27 /* LoadingView.swift */; };
+		59FFF650DA207AD219D873A1 /* ClaudeAPIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C97A9BB7D9F04C71CD3D2C1 /* ClaudeAPIConfig.swift */; };
 		60448A37743C4964EB6FAF66 /* TippyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE158F78E23E69BE9A361BAD /* TippyTheme.swift */; };
 		6BBD146909D3AF02262DA57F /* TippyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D311F73DD5942D5F9FFC140 /* TippyApp.swift */; };
 		6EB3C29CB70F060B97B1A6CE /* ServiceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099E8C76BBBEAE4E70A2E39D /* ServiceType.swift */; };
@@ -26,6 +27,7 @@
 		CC5F66380190484CE23C277B /* GuideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D72FB9A934AA2C7BB0A5421 /* GuideData.swift */; };
 		E4A55DB61F4F06B9F0E88404 /* ExplanationGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF65BFE3F430CA434D781EC /* ExplanationGenerator.swift */; };
 		E9E65ACA1AEE1BE4FE713779 /* ReceiptScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D0F28E7EE9819C59DB589 /* ReceiptScanner.swift */; };
+		EFB51027A101A6595C23A9FF /* ClaudeVisionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F0AB416AF1D6973A97789A /* ClaudeVisionService.swift */; };
 		FBB3A4986AF7D2BB79214152 /* GuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1E867FBD787EE773CB0206 /* GuideView.swift */; };
 		FE8CF27090173D81CFEB848C /* NoBillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE31E7899A04EF42FA879E8F /* NoBillView.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +37,7 @@
 		32CACDE1F73E04410FB541BA /* ServiceIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceIcons.swift; sourceTree = "<group>"; };
 		3D72FB9A934AA2C7BB0A5421 /* GuideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideData.swift; sourceTree = "<group>"; };
 		472DB1823A29ED75BB7A7B4F /* TipEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipEngine.swift; sourceTree = "<group>"; };
+		48F0AB416AF1D6973A97789A /* ClaudeVisionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeVisionService.swift; sourceTree = "<group>"; };
 		49150DCDE6BFD43B49EE79EF /* TipResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipResult.swift; sourceTree = "<group>"; };
 		4A1D0F28E7EE9819C59DB589 /* ReceiptScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScanner.swift; sourceTree = "<group>"; };
 		5BF65BFE3F430CA434D781EC /* ExplanationGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplanationGenerator.swift; sourceTree = "<group>"; };
@@ -46,6 +49,7 @@
 		95D0B210E46D89BDA2F27870 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		96A1816FEA3C035B5D91B9BE /* TipState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipState.swift; sourceTree = "<group>"; };
 		9B1E867FBD787EE773CB0206 /* GuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideView.swift; sourceTree = "<group>"; };
+		9C97A9BB7D9F04C71CD3D2C1 /* ClaudeAPIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIConfig.swift; sourceTree = "<group>"; };
 		ACE07A0A8D34C4F9FF0AB217 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		BD6FA5E9A3EAB62D237038E1 /* TipFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipFlowView.swift; sourceTree = "<group>"; };
 		BE158F78E23E69BE9A361BAD /* TippyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TippyTheme.swift; sourceTree = "<group>"; };
@@ -71,6 +75,7 @@
 				E7C911BE6DDB1B11A3D3B8D6 /* Data */,
 				90DA8B82CDBFC49344E28BC9 /* Engine */,
 				E85DE467EB4BA48FBABF1C91 /* Models */,
+				321497B393E3AE60E5440D1C /* Network */,
 				2C5E97736D904C9203960DD0 /* Theme */,
 				D08185985011521AF7B63FC1 /* Views */,
 			);
@@ -84,6 +89,15 @@
 				BE158F78E23E69BE9A361BAD /* TippyTheme.swift */,
 			);
 			path = Theme;
+			sourceTree = "<group>";
+		};
+		321497B393E3AE60E5440D1C /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				9C97A9BB7D9F04C71CD3D2C1 /* ClaudeAPIConfig.swift */,
+				48F0AB416AF1D6973A97789A /* ClaudeVisionService.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 		5E8A06B3CC200733E7BBD015 /* App */ = {
@@ -239,6 +253,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB4B358F4005D783BE34A9F4 /* CameraView.swift in Sources */,
+				59FFF650DA207AD219D873A1 /* ClaudeAPIConfig.swift in Sources */,
+				EFB51027A101A6595C23A9FF /* ClaudeVisionService.swift in Sources */,
 				B26D171B17A384F76818B8C2 /* ContextView.swift in Sources */,
 				71B124D6497EB9067FBD2CD6 /* EntryView.swift in Sources */,
 				E4A55DB61F4F06B9F0E88404 /* ExplanationGenerator.swift in Sources */,

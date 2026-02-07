@@ -38,6 +38,24 @@
                         <h1 class="brand">Tippy</h1>
                     </div>
 
+                    <div class="scan-section">
+                        <input type="file" id="receipt-input" accept="image/*" capture="environment" hidden>
+                        <button class="btn-scan" id="btn-scan-receipt">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            Scan your receipt
+                        </button>
+                        <div class="scan-status hidden" id="scan-status">
+                            <div class="scan-spinner"></div>
+                            <span>Analyzing receipt...</span>
+                        </div>
+                    </div>
+
+                    <div class="scan-divider">
+                        <span class="scan-divider-line"></span>
+                        <span class="scan-divider-text">or enter manually</span>
+                        <span class="scan-divider-line"></span>
+                    </div>
+
                     <div class="amount-section">
                         <label class="input-label" for="bill-amount">Bill total</label>
                         <div class="amount-input-wrap">

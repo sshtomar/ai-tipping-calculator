@@ -2,18 +2,56 @@ import Vision
 import UIKit
 
 struct ReceiptScanner {
+
+    enum ScanSource {
+        case claudeVision
+        case onDeviceOCR
+    }
+
     struct ScanResult {
         let amount: Double
         let allAmounts: [Double]
+        var subtotal: Double?
+        var tax: Double?
+        var detectedServiceType: ServiceType?
+        var numberOfGuests: Int?
+        var venueName: String?
+        var source: ScanSource = .onDeviceOCR
     }
 
     static func scan(image: UIImage) async -> ScanResult? {
+        // Try Claude Vision first for richer data
+        if let result = try? await scanWithClaude(image: image) {
+            return result
+        }
+        // Fall back to on-device OCR
+        return await scanWithOCR(image: image)
+    }
+
+    // MARK: - Claude Vision
+
+    private static func scanWithClaude(image: UIImage) async throws -> ScanResult {
+        let analysis = try await ClaudeVisionService.analyzeReceipt(image: image)
+        return ScanResult(
+            amount: analysis.total,
+            allAmounts: [analysis.total],
+            subtotal: analysis.subtotal,
+            tax: analysis.tax,
+            detectedServiceType: analysis.serviceType,
+            numberOfGuests: analysis.numberOfGuests,
+            venueName: analysis.venueName,
+            source: .claudeVision
+        )
+    }
+
+    // MARK: - On-Device OCR (existing logic, unchanged)
+
+    private static func scanWithOCR(image: UIImage) async -> ScanResult? {
         guard let cgImage = image.cgImage else { return nil }
 
         let amounts = await recognizeAmounts(in: cgImage)
         guard !amounts.isEmpty else { return nil }
 
-        // Pick the best candidate: look for "total" line first, otherwise largest amount
         return ScanResult(amount: amounts[0], allAmounts: amounts)
     }
 

@@ -383,6 +383,9 @@ const els = {
     onboarding: $('onboarding'),
     mainApp: $('main-app'),
     btnGetStarted: $('btn-get-started'),
+    btnScanReceipt: $('btn-scan-receipt'),
+    receiptInput: $('receipt-input'),
+    scanStatus: $('scan-status'),
     screenEntry: $('screen-entry'),
     screenNoBill: $('screen-no-bill'),
     screenContext: $('screen-context'),
@@ -640,6 +643,89 @@ function initEvents() {
         localStorage.setItem('tippy_onboarded', 'true');
     });
 
+    // Scan receipt
+    els.btnScanReceipt.addEventListener('click', () => {
+        els.receiptInput.click();
+    });
+
+    els.receiptInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Show loading state
+        els.btnScanReceipt.classList.add('hidden');
+        els.scanStatus.classList.remove('hidden');
+
+        try {
+            const base64 = await fileToBase64(file);
+            const mediaType = file.type || 'image/jpeg';
+            const resp = await fetch('/api/analyze-receipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: base64, mediaType }),
+            });
+
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+
+            if (data.error) throw new Error(data.error);
+
+            // Fill in amount
+            if (data.total && data.total > 0) {
+                const formatted = data.total % 1 === 0
+                    ? data.total.toFixed(0)
+                    : data.total.toFixed(2);
+                els.billAmount.value = formatted;
+                state.amount = formatted;
+            }
+
+            // Auto-select service type
+            if (data.serviceType) {
+                const btn = document.querySelector(`.service-btn[data-type="${data.serviceType}"]`);
+                if (btn) {
+                    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.serviceType = data.serviceType;
+                }
+            } else if (!state.serviceType) {
+                const btn = document.querySelector('.service-btn[data-type="restaurant"]');
+                if (btn) {
+                    document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.serviceType = 'restaurant';
+                }
+            }
+
+            // Auto-tag large group if 6+ guests
+            if (data.numberOfGuests && data.numberOfGuests >= 6) {
+                const chip = document.querySelector('.chip[data-tag="large_group"]');
+                if (chip && !state.contextTags.includes('large_group')) {
+                    chip.classList.add('active');
+                    state.contextTags.push('large_group');
+                }
+            }
+
+            // Show venue name if detected
+            if (data.venueName) {
+                const hint = document.querySelector('.amount-hint');
+                if (hint) hint.textContent = `Scanned from ${data.venueName}`;
+            }
+
+            validateEntry();
+        } catch (err) {
+            console.error('Receipt scan failed:', err);
+            // Show a brief inline error, then restore button
+            els.scanStatus.querySelector('span').textContent = 'Scan failed — try entering manually';
+            setTimeout(() => {
+                els.scanStatus.querySelector('span').textContent = 'Analyzing receipt...';
+            }, 2500);
+        } finally {
+            els.btnScanReceipt.classList.remove('hidden');
+            els.scanStatus.classList.add('hidden');
+            els.receiptInput.value = '';
+        }
+    });
+
     // Bill amount input
     els.billAmount.addEventListener('input', (e) => {
         // Allow only numbers and one decimal point
@@ -833,6 +919,20 @@ function init() {
 
 // Make toggleGuideCard available globally (used in onclick)
 window.toggleGuideCard = toggleGuideCard;
+
+// ── Helpers ─────────────────────────────
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Strip the data:...;base64, prefix
+            const result = reader.result.split(',')[1];
+            resolve(result);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 // Go
 init();

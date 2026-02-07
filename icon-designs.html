@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tippy App Icon Designs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    min-height: 100vh;
+    padding: 60px 40px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    color: #f5e6d3;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 15px;
+    color: #888;
+    margin-bottom: 60px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #242424;
+    border-radius: 24px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .icon-wrap {
+    width: 200px;
+    height: 200px;
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .icon-wrap canvas {
+    width: 200px;
+    height: 200px;
+  }
+  .card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f5e6d3;
+  }
+  .card p {
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+  .label {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .label-warm { background: #C17F5933; color: #C17F59; }
+  .label-retro { background: #B8432033; color: #D4604A; }
+  .label-fresh { background: #4A8B5C33; color: #6AAF7B; }
+  .label-bold { background: #C9963833; color: #D4A84B; }
+  .label-heart { background: #B8432033; color: #E07B6A; }
+  .label-classic { background: #6B8BA433; color: #8AAFCA; }
+</style>
+</head>
+<body>
+<h1>TIPPY ICON CONCEPTS</h1>
+<p class="subtitle">American generosity meets warm hospitality</p>
+<div class="grid" id="grid"></div>
+
+<script>
+const S = 512; // canvas resolution
+
+const designs = [
+  {
+    name: "The Generous Penny",
+    desc: "A warm Lincoln penny with a heart cutout. Americana meets generosity — the everyday act of tipping as an American tradition.",
+    label: "Retro Americana",
+    labelClass: "label-retro",
+    draw: (ctx) => {
+      // Warm copper gradient background
+      const bg = ctx.createRadialGradient(S/2, S/2, 40, S/2, S/2, S*0.55);
+      bg.addColorStop(0, '#D4956A');
+      bg.addColorStop(0.5, '#C17F59');
+      bg.addColorStop(1, '#8B5A3A');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      // Subtle texture - concentric circles like a coin
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      for (let r = 60; r < S * 0.48; r += 12) {
+        ctx.beginPath();
+        ctx.arc(S/2, S/2, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Outer ring
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.arc(S/2, S/2, S * 0.42, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Inner ring
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(S/2, S/2, S * 0.38, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Dollar sign - elegant serif style
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = `bold ${S * 0.38}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$', S/2, S/2 - 10);
+
+      // Heart at bottom
+      const hx = S/2, hy = S * 0.78, hs = 28;
+      ctx.fillStyle = '#F4E0C1';
+      ctx.beginPath();
+      ctx.moveTo(hx, hy + hs * 0.7);
+      ctx.bezierCurveTo(hx - hs * 1.5, hy - hs * 0.3, hx - hs * 0.8, hy - hs * 1.2, hx, hy - hs * 0.4);
+      ctx.bezierCurveTo(hx + hs * 0.8, hy - hs * 1.2, hx + hs * 1.5, hy - hs * 0.3, hx, hy + hs * 0.7);
+      ctx.fill();
+
+      // Small stars flanking
+      function star(cx, cy, r) {
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const a = (i * 72 - 90) * Math.PI / 180;
+          const a2 = ((i * 72) + 36 - 90) * Math.PI / 180;
+          ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+          ctx.lineTo(cx + Math.cos(a2) * r * 0.4, cy + Math.sin(a2) * r * 0.4);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      star(S * 0.22, S * 0.78, 14);
+      star(S * 0.78, S * 0.78, 14);
+    }
+  },
+  {
+    name: "Diner Warmth",
+    desc: "A retro neon diner sign glow around the Tippy name. Evokes late-night diners, warm pie, and leaving a little extra for your server.",
+    label: "Retro Diner",
+    labelClass: "label-warm",
+    draw: (ctx) => {
+      // Deep warm background
+      const bg = ctx.createLinearGradient(0, 0, 0, S);
+      bg.addColorStop(0, '#2D1B12');
+      bg.addColorStop(1, '#1A0F09');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      // Neon glow circle
+      const glowColors = [
+        [S*0.44, 'rgba(193,127,89,0)'],
+        [S*0.36, 'rgba(193,127,89,0.03)'],
+        [S*0.30, 'rgba(193,127,89,0.08)'],
+        [S*0.24, 'rgba(193,127,89,0.12)'],
+      ];
+      for (const [r, c] of glowColors) {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.arc(S/2, S/2 - 10, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Neon ring
+      ctx.strokeStyle = '#E8A87C';
+      ctx.lineWidth = 5;
+      ctx.shadowColor = '#E8A87C';
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.arc(S/2, S/2 - 10, S * 0.32, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // "Tippy" text in neon
+      ctx.fillStyle = '#F5E6D3';
+      ctx.shadowColor = '#E8A87C';
+      ctx.shadowBlur = 20;
+      ctx.font = `italic bold ${S * 0.16}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Tippy', S/2, S/2 - 20);
+      ctx.shadowBlur = 0;
+
+      // Small coffee cup below
+      const cx = S/2, cy = S * 0.68;
+      ctx.strokeStyle = '#E8A87C';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#E8A87C';
+      ctx.shadowBlur = 10;
+      // Cup body
+      ctx.beginPath();
+      ctx.moveTo(cx - 22, cy - 10);
+      ctx.lineTo(cx - 18, cy + 16);
+      ctx.quadraticCurveTo(cx, cy + 22, cx + 18, cy + 16);
+      ctx.lineTo(cx + 22, cy - 10);
+      ctx.closePath();
+      ctx.stroke();
+      // Handle
+      ctx.beginPath();
+      ctx.arc(cx + 28, cy + 2, 10, -Math.PI/2, Math.PI/2);
+      ctx.stroke();
+      // Steam
+      ctx.lineWidth = 2;
+      for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(cx + i * 10, cy - 14);
+        ctx.quadraticCurveTo(cx + i * 10 + 4, cy - 22, cx + i * 10, cy - 30);
+        ctx.stroke();
+      }
+      ctx.shadowBlur = 0;
+    }
+  },
+  {
+    name: "Heart & Hand",
+    desc: "A hand presenting a heart — the universal symbol of generosity. Warm terracotta tones that feel approachable and kind.",
+    label: "Generosity",
+    labelClass: "label-heart",
+    draw: (ctx) => {
+      // Soft warm gradient
+      const bg = ctx.createLinearGradient(0, 0, S, S);
+      bg.addColorStop(0, '#F5E6D3');
+      bg.addColorStop(1, '#E8D5C0');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      // Subtle radial warmth
+      const warm = ctx.createRadialGradient(S/2, S*0.45, 20, S/2, S*0.45, S*0.5);
+      warm.addColorStop(0, 'rgba(193,127,89,0.15)');
+      warm.addColorStop(1, 'rgba(193,127,89,0)');
+      ctx.fillStyle = warm;
+      ctx.fillRect(0, 0, S, S);
+
+      // Open palm (simplified elegant shape)
+      ctx.fillStyle = '#C17F59';
+      ctx.beginPath();
+      // Palm base
+      const px = S/2, py = S * 0.62;
+      ctx.moveTo(px - 80, py + 30);
+      ctx.quadraticCurveTo(px - 90, py - 20, px - 60, py - 50);
+      ctx.quadraticCurveTo(px - 40, py - 70, px - 20, py - 55);
+      ctx.quadraticCurveTo(px - 10, py - 75, px, py - 60);
+      ctx.quadraticCurveTo(px + 10, py - 75, px + 20, py - 55);
+      ctx.quadraticCurveTo(px + 40, py - 70, px + 60, py - 50);
+      ctx.quadraticCurveTo(px + 90, py - 20, px + 80, py + 30);
+      ctx.quadraticCurveTo(px + 60, py + 70, px, py + 80);
+      ctx.quadraticCurveTo(px - 60, py + 70, px - 80, py + 30);
+      ctx.closePath();
+      ctx.fill();
+
+      // Heart floating above the palm
+      const hx = S/2, hy = S * 0.30, hs = 52;
+      ctx.fillStyle = '#D4604A';
+      ctx.beginPath();
+      ctx.moveTo(hx, hy + hs * 0.85);
+      ctx.bezierCurveTo(hx - hs * 2, hy - hs * 0.2, hx - hs * 1.1, hy - hs * 1.6, hx, hy - hs * 0.5);
+      ctx.bezierCurveTo(hx + hs * 1.1, hy - hs * 1.6, hx + hs * 2, hy - hs * 0.2, hx, hy + hs * 0.85);
+      ctx.fill();
+
+      // $ inside heart
+      ctx.fillStyle = '#F5E6D3';
+      ctx.font = `bold ${S * 0.1}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$', hx, hy);
+
+      // Subtle sparkles
+      function sparkle(x, y, s) {
+        ctx.fillStyle = 'rgba(193,127,89,0.4)';
+        ctx.beginPath();
+        ctx.moveTo(x, y - s);
+        ctx.quadraticCurveTo(x + s*0.2, y - s*0.2, x + s, y);
+        ctx.quadraticCurveTo(x + s*0.2, y + s*0.2, x, y + s);
+        ctx.quadraticCurveTo(x - s*0.2, y + s*0.2, x - s, y);
+        ctx.quadraticCurveTo(x - s*0.2, y - s*0.2, x, y - s);
+        ctx.fill();
+      }
+      sparkle(S * 0.24, S * 0.22, 12);
+      sparkle(S * 0.76, S * 0.24, 10);
+      sparkle(S * 0.18, S * 0.42, 8);
+      sparkle(S * 0.82, S * 0.40, 9);
+    }
+  },
+  {
+    name: "Golden Plate",
+    desc: "A dinner plate with fork & knife framing a golden dollar sign. The classic American dining experience — enjoy, then tip generously.",
+    label: "Classic Dining",
+    labelClass: "label-classic",
+    draw: (ctx) => {
+      // Rich deep green background
+      const bg = ctx.createLinearGradient(0, 0, 0, S);
+      bg.addColorStop(0, '#1B3328');
+      bg.addColorStop(1, '#0F1F18');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      // Plate - outer ring
+      ctx.strokeStyle = '#D4A84B';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(S/2, S/2, S * 0.32, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Plate - inner ring
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(S/2, S/2, S * 0.26, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Plate fill (subtle)
+      ctx.fillStyle = 'rgba(212,168,75,0.06)';
+      ctx.beginPath();
+      ctx.arc(S/2, S/2, S * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Fork (left)
+      ctx.strokeStyle = '#D4A84B';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      const fx = S * 0.22, fy1 = S * 0.25, fy2 = S * 0.75;
+      // Handle
+      ctx.beginPath();
+      ctx.moveTo(fx, fy2);
+      ctx.lineTo(fx, fy1 + 50);
+      ctx.stroke();
+      // Tines
+      for (let i = -1.5; i <= 1.5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(fx + i * 7, fy1 + 50);
+        ctx.lineTo(fx + i * 7, fy1);
+        ctx.stroke();
+      }
+      // Tine connector
+      ctx.beginPath();
+      ctx.moveTo(fx - 11, fy1 + 50);
+      ctx.lineTo(fx + 11, fy1 + 50);
+      ctx.stroke();
+
+      // Knife (right)
+      const kx = S * 0.78;
+      ctx.beginPath();
+      ctx.moveTo(kx, fy2);
+      ctx.lineTo(kx, fy1);
+      ctx.stroke();
+      // Blade edge
+      ctx.beginPath();
+      ctx.moveTo(kx, fy1);
+      ctx.quadraticCurveTo(kx + 14, fy1 + 40, kx, fy1 + 80);
+      ctx.stroke();
+
+      // Dollar sign center
+      ctx.fillStyle = '#D4A84B';
+      ctx.font = `bold ${S * 0.22}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$', S/2, S/2);
+
+      // Small decorative dots on plate rim
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+        const dx = S/2 + Math.cos(a) * S * 0.35;
+        const dy = S/2 + Math.sin(a) * S * 0.35;
+        ctx.fillStyle = 'rgba(212,168,75,0.3)';
+        ctx.beginPath();
+        ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  },
+  {
+    name: "Sunrise Tip",
+    desc: "A sunrise over rolling hills with a coin rising like the sun. Optimism, new mornings, and the warmth of American hospitality.",
+    label: "Fresh & Warm",
+    labelClass: "label-fresh",
+    draw: (ctx) => {
+      // Sky gradient
+      const sky = ctx.createLinearGradient(0, 0, 0, S);
+      sky.addColorStop(0, '#E8A87C');
+      sky.addColorStop(0.4, '#F5D5B8');
+      sky.addColorStop(0.6, '#F5E6D3');
+      sky.addColorStop(1, '#4A8B5C');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, S, S);
+
+      // Sun rays
+      ctx.strokeStyle = 'rgba(193,127,89,0.2)';
+      ctx.lineWidth = 2;
+      const sunX = S/2, sunY = S * 0.4;
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {
+        ctx.beginPath();
+        ctx.moveTo(sunX + Math.cos(a) * 70, sunY + Math.sin(a) * 70);
+        ctx.lineTo(sunX + Math.cos(a) * 140, sunY + Math.sin(a) * 140);
+        ctx.stroke();
+      }
+
+      // Sun / coin
+      const coinGrad = ctx.createRadialGradient(sunX - 10, sunY - 10, 5, sunX, sunY, 60);
+      coinGrad.addColorStop(0, '#F5D5B8');
+      coinGrad.addColorStop(0.5, '#D4A84B');
+      coinGrad.addColorStop(1, '#B8862D');
+      ctx.fillStyle = coinGrad;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 60, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Coin rim
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 56, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // $ on coin
+      ctx.fillStyle = '#FFF';
+      ctx.font = `bold ${S * 0.12}px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$', sunX, sunY);
+
+      // Rolling hills
+      ctx.fillStyle = '#5A9B6A';
+      ctx.beginPath();
+      ctx.moveTo(0, S * 0.7);
+      ctx.quadraticCurveTo(S * 0.25, S * 0.58, S * 0.5, S * 0.65);
+      ctx.quadraticCurveTo(S * 0.75, S * 0.72, S, S * 0.62);
+      ctx.lineTo(S, S);
+      ctx.lineTo(0, S);
+      ctx.closePath();
+      ctx.fill();
+
+      // Foreground hill
+      ctx.fillStyle = '#4A8B5C';
+      ctx.beginPath();
+      ctx.moveTo(0, S * 0.80);
+      ctx.quadraticCurveTo(S * 0.3, S * 0.70, S * 0.6, S * 0.76);
+      ctx.quadraticCurveTo(S * 0.85, S * 0.82, S, S * 0.74);
+      ctx.lineTo(S, S);
+      ctx.lineTo(0, S);
+      ctx.closePath();
+      ctx.fill();
+
+      // Tiny diner silhouette on hill
+      ctx.fillStyle = '#3A7548';
+      const dx = S * 0.38, dy = S * 0.71;
+      ctx.fillRect(dx - 18, dy - 16, 36, 16);
+      // Roof
+      ctx.beginPath();
+      ctx.moveTo(dx - 24, dy - 16);
+      ctx.lineTo(dx, dy - 28);
+      ctx.lineTo(dx + 24, dy - 16);
+      ctx.closePath();
+      ctx.fill();
+    }
+  },
+  {
+    name: "The Good Receipt",
+    desc: "A stylized receipt curling at the bottom with a warm heart stamp. That satisfying moment of adding a generous tip to the bill.",
+    label: "Bold & Modern",
+    labelClass: "label-bold",
+    draw: (ctx) => {
+      // Warm dark background
+      const bg = ctx.createLinearGradient(0, 0, 0, S);
+      bg.addColorStop(0, '#3D2B1F');
+      bg.addColorStop(1, '#2A1D14');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      // Receipt paper
+      const rx = S * 0.24, ry = S * 0.10, rw = S * 0.52, rh = S * 0.70;
+      ctx.fillStyle = '#F5F0E8';
+
+      // Receipt with torn bottom edge
+      ctx.beginPath();
+      ctx.moveTo(rx, ry);
+      ctx.lineTo(rx + rw, ry);
+      ctx.lineTo(rx + rw, ry + rh);
+      // Zigzag bottom
+      const teeth = 12;
+      const tw = rw / teeth;
+      for (let i = 0; i < teeth; i++) {
+        const bx = rx + rw - i * tw;
+        ctx.lineTo(bx - tw/2, ry + rh + 12);
+        ctx.lineTo(bx - tw, ry + rh);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Receipt shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.moveTo(rx + 6, ry + 6);
+      ctx.lineTo(rx + rw + 6, ry + 6);
+      ctx.lineTo(rx + rw + 6, ry + rh + 6);
+      for (let i = 0; i < teeth; i++) {
+        const bx = rx + rw + 6 - i * tw;
+        ctx.lineTo(bx - tw/2, ry + rh + 18);
+        ctx.lineTo(bx - tw, ry + rh + 6);
+      }
+      ctx.closePath();
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Receipt lines
+      ctx.fillStyle = '#C8BFB0';
+      const lineY = ry + 44;
+      for (let i = 0; i < 5; i++) {
+        const w = rw * (0.4 + Math.random() * 0.35);
+        ctx.fillRect(rx + 28, lineY + i * 28, w, 3);
+      }
+
+      // Dashed line above total
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = '#C8BFB0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rx + 28, lineY + 156);
+      ctx.lineTo(rx + rw - 28, lineY + 156);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // "Total" text
+      ctx.fillStyle = '#5A4A3A';
+      ctx.font = `bold ${S * 0.045}px Georgia, serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('Total', rx + 28, lineY + 186);
+
+      // Amount
+      ctx.textAlign = 'right';
+      ctx.fillText('$42.00', rx + rw - 28, lineY + 186);
+
+      // "Tip" line
+      ctx.fillStyle = '#C17F59';
+      ctx.font = `bold ${S * 0.045}px Georgia, serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('Tip', rx + 28, lineY + 218);
+      ctx.textAlign = 'right';
+      ctx.fillText('$8.40', rx + rw - 28, lineY + 218);
+
+      // Heart stamp overlay
+      const hx = S * 0.62, hy = S * 0.34, hs = 40;
+      ctx.save();
+      ctx.translate(hx, hy);
+      ctx.rotate(0.2);
+      ctx.fillStyle = 'rgba(193,127,89,0.25)';
+      ctx.strokeStyle = '#C17F59';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, hs * 0.7);
+      ctx.bezierCurveTo(-hs * 1.5, -hs * 0.3, -hs * 0.8, -hs * 1.2, 0, -hs * 0.4);
+      ctx.bezierCurveTo(hs * 0.8, -hs * 1.2, hs * 1.5, -hs * 0.3, 0, hs * 0.7);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // Warm glow at bottom
+      const glow = ctx.createRadialGradient(S/2, S * 0.9, 20, S/2, S * 0.9, S * 0.35);
+      glow.addColorStop(0, 'rgba(193,127,89,0.15)');
+      glow.addColorStop(1, 'rgba(193,127,89,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, S * 0.5, S, S * 0.5);
+    }
+  }
+];
+
+const grid = document.getElementById('grid');
+
+designs.forEach((d, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'icon-wrap';
+  const canvas = document.createElement('canvas');
+  canvas.width = S;
+  canvas.height = S;
+  wrap.appendChild(canvas);
+
+  const label = document.createElement('span');
+  label.className = `label ${d.labelClass}`;
+  label.textContent = d.label;
+
+  const h2 = document.createElement('h2');
+  h2.textContent = `${i + 1}. ${d.name}`;
+
+  const p = document.createElement('p');
+  p.textContent = d.desc;
+
+  card.appendChild(wrap);
+  card.appendChild(label);
+  card.appendChild(h2);
+  card.appendChild(p);
+  grid.appendChild(card);
+
+  const ctx = canvas.getContext('2d');
+  d.draw(ctx);
+});
+</script>
+</body>
+</html>
