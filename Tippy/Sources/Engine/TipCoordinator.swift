@@ -11,7 +11,19 @@ enum TipCoordinator {
         state: String?,
         usageLimiter: UsageLimiter
     ) async -> TipResult {
-        // Check if AI is available
+        let hasContext = !tags.isEmpty || !freeText.trimmingCharacters(in: .whitespaces).isEmpty
+
+        // Simple case: no context tags, no free text — use local engine
+        guard hasContext else {
+            return TipEngine.calculate(
+                amount: amount,
+                serviceType: serviceType,
+                tags: tags,
+                freeText: freeText
+            )
+        }
+
+        // Nuanced case: user added context — route to Claude API
         guard usageLimiter.canUseAI else {
             usageLimiter.showUpgradePrompt = true
             return TipEngine.calculate(
@@ -22,7 +34,6 @@ enum TipCoordinator {
             )
         }
 
-        // Try Claude API, fall back to offline engine
         do {
             let result = try await ClaudeRecommendationService.recommend(
                 amount: amount,

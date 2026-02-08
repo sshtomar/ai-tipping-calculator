@@ -128,20 +128,6 @@ struct ResultView: View {
 
     @ViewBuilder
     private func badges(_ result: TipResult) -> some View {
-        if result.isOffline {
-            HStack(spacing: TippySpacing.sm) {
-                Image(systemName: "wifi.slash")
-                    .font(.caption2)
-                Text("Offline estimate")
-                    .font(.caption2.weight(.medium))
-            }
-            .foregroundStyle(.tippyTextTertiary)
-            .padding(.horizontal, TippySpacing.md)
-            .padding(.vertical, TippySpacing.sm)
-            .background(Color.tippySurfaceSecondary)
-            .clipShape(Capsule())
-        }
-
         if let limiter = usageLimiter, limiter.showUpgradePrompt && result.isOffline {
             upgradeBanner()
         }
