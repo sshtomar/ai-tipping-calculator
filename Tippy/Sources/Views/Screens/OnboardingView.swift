@@ -56,6 +56,12 @@ struct OnboardingView: View {
 
                 // Text content
                 VStack(alignment: .leading, spacing: TippySpacing.lg) {
+                    TippyLogoLockup(
+                        iconSize: 42,
+                        titleFont: .system(size: 34, weight: .bold, design: .rounded),
+                        titleColor: .white
+                    )
+
                     Text("WELCOME")
                         .font(.tippyMono)
                         .foregroundStyle(.white.opacity(0.65))

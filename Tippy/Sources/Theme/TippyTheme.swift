@@ -11,6 +11,42 @@ extension Color {
     }
 }
 
+private enum TippyOrangeTextVariant: String {
+    case balanced
+    case deep
+    case rich
+
+    static var current: TippyOrangeTextVariant {
+        guard let raw = UserDefaults.standard.string(forKey: "tippy_orange_text_variant"),
+              let variant = TippyOrangeTextVariant(rawValue: raw) else {
+            return .deep
+        }
+        return variant
+    }
+
+    var lightColor: Color {
+        switch self {
+        case .balanced:
+            return Color(red: 0.745, green: 0.266, blue: 0.157) // #BE4428
+        case .deep:
+            return Color(red: 0.659, green: 0.263, blue: 0.157) // #A84328
+        case .rich:
+            return Color(red: 0.561, green: 0.204, blue: 0.118) // #8F341E
+        }
+    }
+
+    var darkColor: Color {
+        switch self {
+        case .balanced:
+            return Color(red: 0.992, green: 0.690, blue: 0.584)
+        case .deep:
+            return Color(red: 0.992, green: 0.631, blue: 0.525)
+        case .rich:
+            return Color(red: 0.965, green: 0.573, blue: 0.471)
+        }
+    }
+}
+
 // MARK: - Color Palette
 
 extension Color {
@@ -41,6 +77,10 @@ extension Color {
         light: Color(red: 0.808, green: 0.286, blue: 0.173),
         dark: Color(red: 0.902, green: 0.384, blue: 0.255)
     )
+    static var tippyPrimaryTextAccent: Color {
+        let variant = TippyOrangeTextVariant.current
+        return Color(light: variant.lightColor, dark: variant.darkColor)
+    }
     static let tippyYellow = Color(
         light: Color(red: 0.965, green: 0.702, blue: 0.110),   // #F6B31C
         dark: Color(red: 0.965, green: 0.776, blue: 0.255)
@@ -141,6 +181,7 @@ extension ShapeStyle where Self == Color {
     static var tippyPrimary: Color { Color.tippyPrimary }
     static var tippyPrimaryLight: Color { Color.tippyPrimaryLight }
     static var tippyPrimaryDark: Color { Color.tippyPrimaryDark }
+    static var tippyPrimaryTextAccent: Color { Color.tippyPrimaryTextAccent }
     static var tippyBackground: Color { Color.tippyBackground }
     static var tippySurface: Color { Color.tippySurface }
     static var tippySurfaceSecondary: Color { Color.tippySurfaceSecondary }

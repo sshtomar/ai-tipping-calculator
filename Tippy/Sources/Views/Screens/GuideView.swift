@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuideView: View {
     @State private var searchText = ""
+    private let previewExpandFirstGuideCard = UserDefaults.standard.bool(forKey: "tippy_preview_expand_first_guide_card")
 
     private var filteredEntries: [GuideEntry] {
         if searchText.isEmpty { return GuideData.entries }
@@ -60,8 +61,11 @@ struct GuideView: View {
                         .padding(.vertical, TippySpacing.xxl + TippySpacing.sm)
                     } else {
                         LazyVStack(spacing: TippySpacing.sm) {
-                            ForEach(filteredEntries) { entry in
-                                GuideCard(entry: entry)
+                            ForEach(Array(filteredEntries.enumerated()), id: \.element.id) { index, entry in
+                                GuideCard(
+                                    entry: entry,
+                                    initiallyExpanded: previewExpandFirstGuideCard && index == 0
+                                )
                             }
                         }
                     }
@@ -79,7 +83,12 @@ struct GuideView: View {
 
 private struct GuideCard: View {
     let entry: GuideEntry
-    @State private var isExpanded = false
+    @State private var isExpanded: Bool
+
+    init(entry: GuideEntry, initiallyExpanded: Bool = false) {
+        self.entry = entry
+        _isExpanded = State(initialValue: initiallyExpanded)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -91,7 +100,7 @@ private struct GuideCard: View {
                 HStack(spacing: TippySpacing.md) {
                     GuideIcon(name: entry.iconName)
                         .frame(width: TippySpacing.xxl + TippySpacing.xs, height: TippySpacing.xxl + TippySpacing.xs)
-                        .foregroundStyle(isExpanded ? .tippyPrimary : .tippyTextSecondary)
+                        .foregroundStyle(isExpanded ? .tippyPrimaryTextAccent : .tippyTextSecondary)
 
                     VStack(alignment: .leading, spacing: TippySpacing.xs) {
                         Text(entry.title)
@@ -99,7 +108,7 @@ private struct GuideCard: View {
                             .foregroundStyle(.tippyText)
                         Text(entry.range)
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.tippyPrimary)
+                            .foregroundStyle(.tippyPrimaryTextAccent)
                     }
 
                     Spacer()
@@ -127,11 +136,15 @@ private struct GuideCard: View {
                         Text(entry.fallback)
                             .font(.caption.weight(.semibold))
                     }
-                    .foregroundStyle(.tippyPrimary)
+                    .foregroundStyle(.tippyPrimaryTextAccent)
                     .padding(.horizontal, TippySpacing.md)
                     .padding(.vertical, TippySpacing.sm)
-                    .background(Color.tippyPrimaryLight)
+                    .background(Color.tippyPrimaryTextAccent.opacity(0.14))
                     .clipShape(RoundedRectangle(cornerRadius: TippyRadius.chip, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: TippyRadius.chip, style: .continuous)
+                            .stroke(Color.tippyPrimaryTextAccent.opacity(0.24), lineWidth: 1)
+                    )
                 }
                 .padding(.horizontal, TippySpacing.base)
                 .padding(.leading, TippySpacing.xxl + TippySpacing.base + TippySpacing.xs)

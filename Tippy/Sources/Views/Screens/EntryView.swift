@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import UIKit
 
 struct EntryView: View {
     @Bindable var state: TipState
@@ -8,11 +9,15 @@ struct EntryView: View {
     @State private var showCamera = false
     @State private var isScanning = false
     @State private var cameraPermission: AVAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
+    @State private var didRunAutomationHooks = false
 
     private static let primary: [ServiceType] = [.restaurant, .bar, .cafe, .delivery, .rideshare, .salon]
     private static let secondary: [ServiceType] = [.spa, .tattoo, .valet, .hotel, .movers, .other]
 
     @AppStorage("hasSeenTippy") private var hasSeenTippy = false
+    private var hasCameraHardware: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,13 +29,10 @@ struct EntryView: View {
                             .foregroundStyle(.tippyTextTertiary)
                             .tracking(1.0)
 
-                        Text("Tippy")
-                            .font(.tippyTitle)
-                            .foregroundStyle(.tippyText)
-
-                        Text("Know what to tip, always.")
-                            .font(.subheadline)
-                            .foregroundStyle(.tippyTextSecondary)
+                        TippyLogoLockup(
+                            iconSize: 52,
+                            subtitle: "Know what to tip, always."
+                        )
                     }
                     .padding(.top, TippySpacing.sm)
 
@@ -102,6 +104,7 @@ struct EntryView: View {
         }
         .onAppear {
             cameraPermission = AVCaptureDevice.authorizationStatus(for: .video)
+            runAutomationHooksIfNeeded()
         }
         .onChange(of: state.serviceType) { _, newValue in
             if let newValue, Self.secondary.contains(newValue) {
@@ -114,7 +117,62 @@ struct EntryView: View {
 
     @ViewBuilder
     private func receiptScanSection() -> some View {
-        if cameraPermission == .denied || cameraPermission == .restricted {
+        if !hasCameraHardware {
+            Button {
+                amountFocused = false
+                showCamera = true
+            } label: {
+                HStack(spacing: TippySpacing.md) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.tippyPrimaryLight)
+                            .frame(width: TippySpacing.xxl + TippySpacing.xs, height: TippySpacing.xxl + TippySpacing.xs)
+                        Image(systemName: "photo.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.tippyPrimary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Choose receipt photo")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.tippyText)
+                        Text("Camera unavailable on this device")
+                            .font(.caption)
+                            .foregroundStyle(.tippyTextTertiary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tippyTextTertiary)
+                }
+                .padding(.horizontal, TippySpacing.base)
+                .padding(.vertical, TippySpacing.md)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color.tippyYellow.opacity(0.16),
+                            Color.tippySky.opacity(0.08),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
+                        .stroke(Color.tippyBorder, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .fullScreenCover(isPresented: $showCamera) {
+                CameraView { image in
+                    scanReceipt(image)
+                }
+                .ignoresSafeArea()
+            }
+        } else if cameraPermission == .denied || cameraPermission == .restricted {
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -350,8 +408,14 @@ struct EntryView: View {
 
     private func scanReceipt(_ image: UIImage) {
         isScanning = true
+#if DEBUG
+        UserDefaults.standard.set("scan-started", forKey: "tippy_automation_last_status")
+#endif
         Task {
             if let result = await ReceiptScanner.scan(image: image) {
+#if DEBUG
+                UserDefaults.standard.set("scan-success:\(result.amount)", forKey: "tippy_automation_last_status")
+#endif
                 if result.autoGratuityIncluded == true {
                     state.autoGratuityAmount = result.autoGratuityAmount
                 }
@@ -377,10 +441,63 @@ struct EntryView: View {
                 if let guests = result.numberOfGuests, guests >= 6 {
                     state.contextTags.insert(.largeGroup)
                 }
+            } else {
+#if DEBUG
+                UserDefaults.standard.set("scan-failed-no-result", forKey: "tippy_automation_last_status")
+#endif
             }
             isScanning = false
         }
     }
+
+    private func runAutomationHooksIfNeeded() {
+#if DEBUG
+        guard !didRunAutomationHooks else { return }
+        didRunAutomationHooks = true
+
+        let defaults = UserDefaults.standard
+        defaults.set("hook-started", forKey: "tippy_automation_last_status")
+
+        if defaults.bool(forKey: "tippy_automation_open_scan_sheet") {
+            amountFocused = false
+            showCamera = true
+            defaults.set("opened-scan-sheet", forKey: "tippy_automation_last_status")
+        }
+
+        if let configuredPath = defaults.string(forKey: "tippy_automation_autoscan_receipt_path"),
+           let resolvedPath = resolveAutomationImagePath(configuredPath),
+           let image = UIImage(contentsOfFile: resolvedPath) {
+            amountFocused = false
+            defaults.set("loaded-image:\(resolvedPath)", forKey: "tippy_automation_last_status")
+            scanReceipt(image)
+        } else if defaults.string(forKey: "tippy_automation_autoscan_receipt_path") != nil {
+            defaults.set("failed-to-load-image", forKey: "tippy_automation_last_status")
+        }
+#endif
+    }
+
+#if DEBUG
+    private func resolveAutomationImagePath(_ configuredPath: String) -> String? {
+        let fileManager = FileManager.default
+        var candidates: [String] = []
+
+        // Absolute path
+        candidates.append(configuredPath)
+
+        // Relative path under app Documents
+        if let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.path {
+            candidates.append((documentsPath as NSString).appendingPathComponent(configuredPath))
+
+            // If a host/container path was configured, keep just the file name.
+            let fileName = URL(fileURLWithPath: configuredPath).lastPathComponent
+            if !fileName.isEmpty {
+                candidates.append((documentsPath as NSString).appendingPathComponent(fileName))
+            }
+        }
+
+        return candidates.first(where: { fileManager.fileExists(atPath: $0) })
+    }
+#endif
 }
 
 // MARK: - Service Type Button

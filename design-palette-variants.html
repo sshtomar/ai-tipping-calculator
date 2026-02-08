@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tippy Palette Variants</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fbfaf6;
+      --panel: #ffffff;
+      --ink: #1b2330;
+      --muted: #5b6779;
+      --line: #d8dce5;
+      --r-xl: 26px;
+      --r-lg: 18px;
+      --r-md: 12px;
+      --shadow: 0 18px 40px rgba(18, 34, 56, 0.12);
+      --mono: "IBM Plex Mono", monospace;
+      --sans: "Manrope", sans-serif;
+      --serif: "Fraunces", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--sans);
+      color: var(--ink);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 5%, rgba(255, 189, 102, 0.2), rgba(255, 189, 102, 0) 30%),
+        radial-gradient(circle at 95% 8%, rgba(116, 167, 255, 0.18), rgba(116, 167, 255, 0) 27%),
+        linear-gradient(165deg, #fffdfa 0%, #f8fbff 65%, #fcf9f1 100%);
+      padding: 28px 16px 50px;
+    }
+
+    .wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .intro {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      animation: rise 0.7s ease both;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      line-height: 1.02;
+      margin-bottom: 10px;
+    }
+
+    .sub {
+      color: var(--muted);
+      max-width: 70ch;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .token-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .token {
+      font: 500 0.74rem/1 var(--mono);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff;
+      color: #3f4d63;
+    }
+
+    .palette-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .palette-card {
+      --a: #ff6b3f;
+      --b: #1f3f67;
+      --c: #ffc15d;
+      --d: #3d88ff;
+      --e: #2ab49d;
+      --f: #ffe8de;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      animation: rise 0.65s ease both;
+    }
+
+    .palette-head {
+      display: grid;
+      gap: 4px;
+    }
+
+    .kicker {
+      font: 700 0.68rem/1 var(--mono);
+      color: #607188;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .name {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.87rem;
+      line-height: 1.35;
+    }
+
+    .swatches {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .swatch {
+      border-radius: 8px;
+      min-height: 26px;
+      border: 1px solid rgba(18, 31, 52, 0.08);
+    }
+
+    .mini-screen {
+      border: 1px solid rgba(18, 31, 52, 0.14);
+      border-radius: 22px;
+      overflow: hidden;
+      background: #fff;
+      min-height: 300px;
+      display: grid;
+      box-shadow: 0 12px 28px rgba(18, 31, 52, 0.16);
+    }
+
+    .mini-head {
+      padding: 12px;
+      background: linear-gradient(125deg, color-mix(in srgb, var(--c) 44%, white), color-mix(in srgb, var(--f) 65%, white));
+      border-bottom: 1px solid color-mix(in srgb, var(--b) 20%, white);
+      display: grid;
+      gap: 2px;
+    }
+
+    .mini-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--b);
+    }
+
+    .mini-sub {
+      color: color-mix(in srgb, var(--b) 65%, #444);
+      font-size: 0.78rem;
+    }
+
+    .mini-body {
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+      align-content: start;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--f) 35%, white), #fff 35%);
+    }
+
+    .line {
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--b) 16%, white);
+      background: color-mix(in srgb, var(--f) 32%, white);
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: color-mix(in srgb, var(--b) 72%, #444);
+    }
+
+    .line strong {
+      font-size: 0.97rem;
+      font-weight: 800;
+      color: var(--b);
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      padding: 5px 8px;
+      border: 1px solid color-mix(in srgb, var(--a) 30%, white);
+      color: color-mix(in srgb, var(--a) 76%, #333);
+      background: color-mix(in srgb, var(--a) 14%, white);
+    }
+
+    .bar {
+      border-radius: 999px;
+      height: 9px;
+      border: 1px solid color-mix(in srgb, var(--b) 20%, white);
+      overflow: hidden;
+      background: color-mix(in srgb, var(--b) 6%, white);
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 78%;
+      background: linear-gradient(90deg, var(--e), var(--d));
+    }
+
+    .cta {
+      margin-top: 2px;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.8rem;
+      background: linear-gradient(120deg, var(--a), color-mix(in srgb, var(--a) 70%, var(--b)));
+    }
+
+    .meta {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .meta code {
+      font: 700 0.66rem/1 var(--mono);
+      border-radius: 999px;
+      padding: 5px 8px;
+      color: #4d6079;
+      background: #f6f8fc;
+      border: 1px solid var(--line);
+    }
+
+    .coastline { --a: #ff6840; --b: #17395f; --c: #f6b31c; --d: #4d90ff; --e: #24b39a; --f: #ffe8de; }
+    .harbor-night { --a: #fe7844; --b: #11253c; --c: #f7ba3c; --d: #58b6e9; --e: #4bd4b4; --f: #dceeff; }
+    .market-sunrise { --a: #f45a3c; --b: #2d3441; --c: #f8c55c; --d: #5c91f5; --e: #57b77d; --f: #ffe4d7; }
+    .linen-club { --a: #d95f3a; --b: #22334d; --c: #d9b25f; --d: #6790cc; --e: #4a9a86; --f: #f8eede; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 18px 10px 30px; }
+      .intro { padding: 16px; }
+      .palette-card { padding: 12px; }
+      .mini-screen { min-height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="intro">
+      <h1>More Palette Directions</h1>
+      <p class="sub">
+        Four additional visual directions to evaluate for Tippy. Each option includes core swatches, usage tokens, and a compact result-screen artifact for quick comparison.
+      </p>
+      <div class="token-row">
+        <span class="token">Typography: Fraunces + Manrope</span>
+        <span class="token">UI Tone: high-clarity, warm-trust</span>
+        <span class="token">System: accent + support + neutral ramp</span>
+      </div>
+    </section>
+
+    <section class="palette-grid">
+      <article class="palette-card coastline" style="animation-delay: .05s;">
+        <header class="palette-head">
+          <span class="kicker">Option 01</span>
+          <h2 class="name">Coastline Citrus+</h2>
+          <p class="note">Brighter update of your current direction. Highest contrast and strongest call-to-action energy.</p>
+        </header>
+        <div class="swatches">
+          <span class="swatch" style="background:var(--a)"></span>
+          <span class="swatch" style="background:var(--b)"></span>
+          <span class="swatch" style="background:var(--c)"></span>
+          <span class="swatch" style="background:var(--d)"></span>
+          <span class="swatch" style="background:var(--e)"></span>
+          <span class="swatch" style="background:var(--f)"></span>
+        </div>
+        <div class="mini-screen">
+          <div class="mini-head">
+            <p class="kicker">Result Screen</p>
+            <p class="mini-title">Recommended Tip</p>
+            <p class="mini-sub">Restaurant dinner • 2 guests</p>
+          </div>
+          <div class="mini-body">
+            <div class="line"><span>Tip Amount</span><strong>$14.00</strong></div>
+            <div class="pills"><span class="pill">Fast service</span><span class="pill">Complex order</span><span class="pill">Busy hour</span></div>
+            <div class="bar"><span></span></div>
+            <button class="cta" type="button">Save + Split Bill</button>
+          </div>
+        </div>
+        <div class="meta"><code>Primary #FF6840</code><code>Ink #17395F</code><code>CTA High</code></div>
+      </article>
+
+      <article class="palette-card harbor-night" style="animation-delay: .1s;">
+        <header class="palette-head">
+          <span class="kicker">Option 02</span>
+          <h2 class="name">Harbor Night</h2>
+          <p class="note">Deeper navy foundation with electric support colors. More premium and data-forward.</p>
+        </header>
+        <div class="swatches">
+          <span class="swatch" style="background:var(--a)"></span>
+          <span class="swatch" style="background:var(--b)"></span>
+          <span class="swatch" style="background:var(--c)"></span>
+          <span class="swatch" style="background:var(--d)"></span>
+          <span class="swatch" style="background:var(--e)"></span>
+          <span class="swatch" style="background:var(--f)"></span>
+        </div>
+        <div class="mini-screen">
+          <div class="mini-head">
+            <p class="kicker">Input Screen</p>
+            <p class="mini-title">Bill + Context</p>
+            <p class="mini-sub">Fast taps, confident defaults</p>
+          </div>
+          <div class="mini-body">
+            <div class="line"><span>Bill total</span><strong>$86.00</strong></div>
+            <div class="pills"><span class="pill">Restaurant</span><span class="pill">Date night</span><span class="pill">Rainy weather</span></div>
+            <div class="line"><span>Confidence model</span><strong>79%</strong></div>
+            <button class="cta" type="button">Generate Tip Advice</button>
+          </div>
+        </div>
+        <div class="meta"><code>Primary #FE7844</code><code>Ink #11253C</code><code>Premium</code></div>
+      </article>
+
+      <article class="palette-card market-sunrise" style="animation-delay: .15s;">
+        <header class="palette-head">
+          <span class="kicker">Option 03</span>
+          <h2 class="name">Market Sunrise</h2>
+          <p class="note">Softer neutrals with a lively coral accent. Friendly and approachable for casual usage.</p>
+        </header>
+        <div class="swatches">
+          <span class="swatch" style="background:var(--a)"></span>
+          <span class="swatch" style="background:var(--b)"></span>
+          <span class="swatch" style="background:var(--c)"></span>
+          <span class="swatch" style="background:var(--d)"></span>
+          <span class="swatch" style="background:var(--e)"></span>
+          <span class="swatch" style="background:var(--f)"></span>
+        </div>
+        <div class="mini-screen">
+          <div class="mini-head">
+            <p class="kicker">Onboarding Screen</p>
+            <p class="mini-title">Know What To Tip</p>
+            <p class="mini-sub">No slider fatigue. One clear answer.</p>
+          </div>
+          <div class="mini-body">
+            <div class="line"><span>Promise</span><strong>Private by default</strong></div>
+            <div class="pills"><span class="pill">Fast setup</span><span class="pill">No guessing</span><span class="pill">Local data</span></div>
+            <div class="bar"><span style="width: 72%;"></span></div>
+            <button class="cta" type="button">Start Using Tippy</button>
+          </div>
+        </div>
+        <div class="meta"><code>Primary #F45A3C</code><code>Ink #2D3441</code><code>Friendly</code></div>
+      </article>
+
+      <article class="palette-card linen-club" style="animation-delay: .2s;">
+        <header class="palette-head">
+          <span class="kicker">Option 04</span>
+          <h2 class="name">Linen Club</h2>
+          <p class="note">Muted upscale palette, best for a polished hospitality feel and lower visual noise.</p>
+        </header>
+        <div class="swatches">
+          <span class="swatch" style="background:var(--a)"></span>
+          <span class="swatch" style="background:var(--b)"></span>
+          <span class="swatch" style="background:var(--c)"></span>
+          <span class="swatch" style="background:var(--d)"></span>
+          <span class="swatch" style="background:var(--e)"></span>
+          <span class="swatch" style="background:var(--f)"></span>
+        </div>
+        <div class="mini-screen">
+          <div class="mini-head">
+            <p class="kicker">History Screen</p>
+            <p class="mini-title">Feedback Trends</p>
+            <p class="mini-sub">Calm and editorial layout tone</p>
+          </div>
+          <div class="mini-body">
+            <div class="line"><span>Tips logged</span><strong>128</strong></div>
+            <div class="line"><span>Just right</span><strong>84%</strong></div>
+            <div class="pills"><span class="pill">Restaurant</span><span class="pill">Bar</span><span class="pill">Salon</span></div>
+            <button class="cta" type="button">Review Last Session</button>
+          </div>
+        </div>
+        <div class="meta"><code>Primary #D95F3A</code><code>Ink #22334D</code><code>Editorial</code></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

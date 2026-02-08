@@ -28,7 +28,10 @@ struct MainTabView: View {
                 .tag(2)
         }
         .tint(Color.tippyPrimary)
-        .onAppear(perform: configureTabBarAppearance)
+        .onAppear {
+            configureTabBarAppearance()
+            applyPreviewTabIfPresent()
+        }
     }
 
     private func configureTabBarAppearance() {
@@ -39,5 +42,12 @@ struct MainTabView: View {
 
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
+    private func applyPreviewTabIfPresent() {
+        let previewTab = UserDefaults.standard.integer(forKey: "tippy_preview_tab")
+        if (0...2).contains(previewTab) {
+            selectedTab = previewTab
+        }
     }
 }
