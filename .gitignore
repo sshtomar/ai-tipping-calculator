@@ -16,4 +16,5 @@ build/
 
 # Secrets
 .env
+Secrets.xcconfig
 test-receipt.png

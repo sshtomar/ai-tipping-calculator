@@ -16,6 +16,14 @@ settings:
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
 
+schemes:
+  Tippy:
+    build:
+      targets:
+        Tippy: all
+    run:
+      storeKitConfiguration: Tippy/Configuration.storekit
+
 targets:
   Tippy:
     type: application
@@ -32,3 +40,11 @@ targets:
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Tippy uses your approximate location to tailor tip recommendations to local customs."
         CODE_SIGN_IDENTITY: ""
         CODE_SIGNING_REQUIRED: "NO"
+    postCompileScripts:
+      - script: |
+          if [ -f "${SRCROOT}/.env" ]; then
+            source "${SRCROOT}/.env"
+            /usr/libexec/PlistBuddy -c "Add :CLAUDE_API_KEY string ${CLAUDE_API_KEY}" "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}" 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :CLAUDE_API_KEY ${CLAUDE_API_KEY}" "${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          fi
+        name: Inject API Key

@@ -1,0 +1,63 @@
+{
+  "identifier" : "8A2F3B4C-1D5E-6F7A-8B9C-0D1E2F3A4B5C",
+  "type" : "Configuration",
+  "version" : 3,
+  "defaultLocalization" : "en_US",
+  "subscriptionGroups" : [
+    {
+      "id" : "tippy_pro_group",
+      "localizations" : [
+        {
+          "description" : "Unlimited AI-powered tip recommendations",
+          "displayName" : "Tippy Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Tippy Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A1B2C3D4-0001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited AI tips, billed monthly",
+              "displayName" : "Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "tippy_pro_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Tippy Pro Monthly",
+          "subscriptionGroupID" : "tippy_pro_group",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A1B2C3D4-0002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited AI tips, billed annually",
+              "displayName" : "Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "tippy_pro_annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Tippy Pro Annual",
+          "subscriptionGroupID" : "tippy_pro_group",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ]
+}

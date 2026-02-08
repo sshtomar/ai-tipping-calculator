@@ -43,26 +43,25 @@ struct UpgradeView: View {
 
                     // Purchase buttons
                     VStack(spacing: TippySpacing.md) {
-                        ForEach(manager.products, id: \.id) { product in
-                            Button {
-                                Task { await manager.purchase(product) }
-                            } label: {
-                                VStack(spacing: TippySpacing.xs) {
-                                    Text(product.displayName)
-                                        .font(.body.weight(.semibold))
-                                    Text(product.displayPrice)
-                                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                                }
-                                .tippyPrimaryButton()
-                            }
-                            .buttonStyle(.plain)
-                        }
-
                         if manager.products.isEmpty {
-                            Text("Loading plans...")
-                                .font(.subheadline)
-                                .foregroundStyle(.tippyTextTertiary)
-                                .padding(.vertical, TippySpacing.base)
+                            // Fallback display when StoreKit products unavailable
+                            fallbackButton(name: "Monthly", price: "$2.99 / month")
+                            fallbackButton(name: "Annual", price: "$19.99 / year")
+                        } else {
+                            ForEach(manager.products, id: \.id) { product in
+                                Button {
+                                    Task { await manager.purchase(product) }
+                                } label: {
+                                    VStack(spacing: TippySpacing.xs) {
+                                        Text(product.displayName)
+                                            .font(.body.weight(.semibold))
+                                        Text(product.displayPrice)
+                                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                                    }
+                                    .tippyPrimaryButton()
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
 
@@ -87,6 +86,17 @@ struct UpgradeView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func fallbackButton(name: String, price: String) -> some View {
+        VStack(spacing: TippySpacing.xs) {
+            Text(name)
+                .font(.body.weight(.semibold))
+            Text(price)
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+        }
+        .tippyPrimaryButton()
     }
 
     @ViewBuilder
