@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>07 Layered Badge — Refinements</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    background: #0A0E14;
+    color: #E8EDF5;
+    padding: 40px 20px 80px;
+  }
+  h1 { text-align: center; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #6B839A; font-size: 13px; margin-bottom: 48px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #141A22;
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(255,104,64,0.3); }
+  .card-label {
+    font-size: 11px; font-weight: 600; color: #FF6840;
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .card-desc { font-size: 12px; color: #6B839A; line-height: 1.5; margin-bottom: 20px; min-height: 54px; }
+  .icon-row {
+    display: flex; align-items: flex-end; gap: 14px; justify-content: center;
+  }
+  .icon-frame { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .icon-size-label { font-size: 10px; color: #4A5568; font-family: 'SF Mono', monospace; }
+  .icon-wrap {
+    border-radius: 22.37%; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  .icon-wrap.s200 { width: 200px; height: 200px; }
+  .icon-wrap.s80  { width: 80px;  height: 80px;  }
+  .icon-wrap.s40  { width: 40px;  height: 40px;  }
+  .icon-wrap.s29  { width: 29px;  height: 29px;  }
+  .icon-wrap svg { display: block; width: 100%; height: 100%; }
+  .tag {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px;
+    background: rgba(255,104,64,0.15); color: #FF6840; margin-bottom: 12px;
+  }
+  .section-divider {
+    text-align: center; font-size: 12px; font-weight: 600; color: #4A6580;
+    letter-spacing: 2px; text-transform: uppercase; margin: 48px 0 28px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<h1>07 — Layered Badge Refinements</h1>
+<p class="subtitle">Tighter geometry &middot; Gradient explorations &middot; Accent variations &middot; Shown at 200pt / 80pt / 40pt / 29pt</p>
+
+<div class="grid">
+
+<!-- ============================================================ -->
+<!-- V1: PURE — Baseline Refined -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V1</div>
+  <div class="card-title">Pure</div>
+  <span class="tag">baseline</span>
+  <p class="card-desc">Tightened geometry: T optically centered (shifted 12px up), consistent 96-unit stroke, 14r corners. Badge uses 180r corners. No accents — lets the form speak.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v1badge" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stop-color="#FF7B54"/>
+              <stop offset="100%" stop-color="#E5522A"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v1badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.12"/>
+          <!-- T: bar 440w x 96h, stem 96w x 380h, optically centered -->
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="#FF6840"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="#FF6840"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="#FF6840"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V2: GOLD UNDERLINE -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V2</div>
+  <div class="card-title">Gold Underline</div>
+  <span class="tag">accent</span>
+  <p class="card-desc">A thin gold bar sits beneath the T stem — evoking the "total" line on a receipt. Adds just enough detail to be interesting without cluttering. Uses #F6B31C yellow.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v2badge" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stop-color="#FF7B54"/>
+              <stop offset="100%" stop-color="#E5522A"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v2badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.12"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+          <!-- Gold underline -->
+          <rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.85"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="#FF6840"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/><rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.85"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="#FF6840"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/><rect x="356" y="696" width="312" height="16" rx="8" fill="#F6B31C" opacity="0.85"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="#FF6840"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/><rect x="340" y="704" width="344" height="18" rx="9" fill="#F6B31C" opacity="0.85"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V3: CORNER SPARKLE -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V3</div>
+  <div class="card-title">Corner Spark</div>
+  <span class="tag">accent</span>
+  <p class="card-desc">A small 4-pointed star in the top-right corner hints at AI intelligence. Uses the app's own yellow — not Gemini's gradient. Positioned at the golden ratio intersection.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v3badge" x1="0.5" y1="0" x2="0.5" y2="1">
+              <stop offset="0%" stop-color="#FF7B54"/>
+              <stop offset="100%" stop-color="#E5522A"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v3badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.12"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+          <!-- 4-pointed star at golden ratio position (~744, ~232) -->
+          <g transform="translate(748, 228)">
+            <path d="M0,-28 C4,-8 8,-4 28,0 C8,4 4,8 0,28 C-4,8 -8,4 -28,0 C-8,-4 -4,-8 0,-28Z" fill="#F6B31C"/>
+          </g>
+          <!-- Tiny companion star -->
+          <g transform="translate(792, 192)">
+            <path d="M0,-12 C2,-4 4,-2 12,0 C4,2 2,4 0,12 C-2,4 -4,2 -12,0 C-4,-2 -2,-4 0,-12Z" fill="#F6B31C" opacity="0.6"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="#FF6840"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/><g transform="translate(748, 228)"><path d="M0,-28 C4,-8 8,-4 28,0 C8,4 4,8 0,28 C-4,8 -8,4 -28,0 C-8,-4 -4,-8 0,-28Z" fill="#F6B31C"/></g></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="#FF6840"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/><g transform="translate(752, 224)"><path d="M0,-32 C5,-9 9,-5 32,0 C9,5 5,9 0,32 C-5,9 -9,5 -32,0 C-9,-5 -5,-9 0,-32Z" fill="#F6B31C"/></g></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="#FF6840"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/><g transform="translate(756, 220)"><path d="M0,-36 C5,-10 10,-5 36,0 C10,5 5,10 0,36 C-5,10 -10,5 -36,0 C-10,-5 -5,-10 0,-36Z" fill="#F6B31C"/></g></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V4: DEEP GRADIENT -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V4</div>
+  <div class="card-title">Deep Gradient</div>
+  <span class="tag">gradient</span>
+  <p class="card-desc">A richer top-left to bottom-right gradient gives the badge more dimensionality and a premium "glossy" feel. Ranges from warm peach (#FFA07A) to deep burnt orange (#C44220).</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v4badge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FFA07A"/>
+              <stop offset="40%" stop-color="#FF6840"/>
+              <stop offset="100%" stop-color="#C44220"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v4badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.1"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v4b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v4b)"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v4c" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="url(#v4c)"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v4d" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="url(#v4d)"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V5: DEEP GRADIENT + GOLD UNDERLINE -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V5</div>
+  <div class="card-title">Deep + Gold Line</div>
+  <span class="tag">recommended</span>
+  <p class="card-desc">Combines V4's rich gradient with V2's gold underline. The underline doubles as a "total" line and a warm accent that breaks up the monochrome T. Best balance of simplicity and detail.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v5badge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FFA07A"/>
+              <stop offset="40%" stop-color="#FF6840"/>
+              <stop offset="100%" stop-color="#C44220"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v5badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.1"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+          <rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.9"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v5b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v5b)"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/><rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v5c" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="url(#v5c)"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/><rect x="356" y="696" width="312" height="16" rx="8" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v5d" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="url(#v5d)"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/><rect x="340" y="704" width="344" height="18" rx="9" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V6: DEEP GRADIENT + CORNER SPARK -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V6</div>
+  <div class="card-title">Deep + Spark</div>
+  <span class="tag">recommended</span>
+  <p class="card-desc">Rich gradient with the corner sparkle. The sparkle signals "AI-powered" without borrowing any brand. The spark scales down well — becomes a bright dot at 29pt that still adds energy.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v6badge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FFA07A"/>
+              <stop offset="40%" stop-color="#FF6840"/>
+              <stop offset="100%" stop-color="#C44220"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v6badge)"/>
+          <rect x="156" y="156" width="712" height="712" rx="152" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.1"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+          <g transform="translate(748, 228)">
+            <path d="M0,-28 C4,-8 8,-4 28,0 C8,4 4,8 0,28 C-4,8 -8,4 -28,0 C-8,-4 -4,-8 0,-28Z" fill="#F6B31C"/>
+          </g>
+          <g transform="translate(792, 192)">
+            <path d="M0,-12 C2,-4 4,-2 12,0 C4,2 2,4 0,12 C-2,4 -4,2 -12,0 C-4,-2 -2,-4 0,-12Z" fill="#F6B31C" opacity="0.6"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v6b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="112" y="112" width="800" height="800" rx="180" fill="url(#v6b)"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/><g transform="translate(748, 228)"><path d="M0,-28 C4,-8 8,-4 28,0 C8,4 4,8 0,28 C-4,8 -8,4 -28,0 C-8,-4 -4,-8 0,-28Z" fill="#F6B31C"/></g></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v6c" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="100" y="100" width="824" height="824" rx="180" fill="url(#v6c)"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/><g transform="translate(752, 224)"><path d="M0,-32 C5,-9 9,-5 32,0 C9,5 5,9 0,32 C-5,9 -9,5 -32,0 C-9,-5 -5,-9 0,-32Z" fill="#F6B31C"/></g></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v6d" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFA07A"/><stop offset="40%" stop-color="#FF6840"/><stop offset="100%" stop-color="#C44220"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="#10253F"/><rect x="80" y="80" width="864" height="864" rx="180" fill="url(#v6d)"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/><circle cx="760" cy="220" r="20" fill="#F6B31C"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V7: NO BORDER FRAME -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V7</div>
+  <div class="card-title">Borderless</div>
+  <span class="tag">minimal</span>
+  <p class="card-desc">Removes the navy border entirely — the badge fills the full icon. Maximum orange surface area. The iOS squircle mask becomes the only frame. Bolder, more aggressive.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v7badge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FF8456"/>
+              <stop offset="100%" stop-color="#E04420"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="url(#v7badge)"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v7b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v7b)"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v7c" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v7c)"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v7d" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v7d)"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- V8: BORDERLESS + GOLD UNDERLINE -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-label">V8</div>
+  <div class="card-title">Borderless + Gold</div>
+  <span class="tag">bold pick</span>
+  <p class="card-desc">Full-bleed orange with the gold underline. Maximum saturation and energy. The gold line provides the only secondary color. Think Instagram-level simplicity and boldness.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s200">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="v8badge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FF8456"/>
+              <stop offset="100%" stop-color="#E04420"/>
+            </linearGradient>
+          </defs>
+          <rect width="1024" height="1024" fill="url(#v8badge)"/>
+          <rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/>
+          <rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/>
+          <rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.9"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">200</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v8b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v8b)"/><rect x="292" y="280" width="440" height="96" rx="14" fill="#FFF8EE"/><rect x="464" y="280" width="96" height="380" rx="14" fill="#FFF8EE"/><rect x="368" y="688" width="288" height="12" rx="6" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">80</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v8c" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v8c)"/><rect x="280" y="272" width="464" height="104" rx="14" fill="#FFF8EE"/><rect x="460" y="272" width="104" height="396" rx="14" fill="#FFF8EE"/><rect x="356" y="696" width="312" height="16" rx="8" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">40</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s29">
+        <svg viewBox="0 0 1024 1024">
+          <defs><linearGradient id="v8d" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8456"/><stop offset="100%" stop-color="#E04420"/></linearGradient></defs>
+          <rect width="1024" height="1024" fill="url(#v8d)"/><rect x="260" y="264" width="504" height="112" rx="14" fill="#FFF8EE"/><rect x="452" y="264" width="120" height="412" rx="14" fill="#FFF8EE"/><rect x="340" y="704" width="344" height="18" rx="9" fill="#F6B31C" opacity="0.9"/></svg>
+      </div>
+      <span class="icon-size-label">29</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /grid -->
+
+</body>
+</html>

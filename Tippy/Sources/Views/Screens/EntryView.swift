@@ -29,10 +29,15 @@ struct EntryView: View {
                             .foregroundStyle(.tippyTextTertiary)
                             .tracking(1.0)
 
-                        TippyLogoLockup(
-                            iconSize: 52,
-                            subtitle: "Know what to tip, always."
-                        )
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Tippy")
+                                .font(.tippyTitle)
+                                .foregroundStyle(.tippyText)
+
+                            Text("Know what to tip, always.")
+                                .font(.subheadline)
+                                .foregroundStyle(.tippyTextSecondary)
+                        }
                     }
                     .padding(.top, TippySpacing.sm)
 
@@ -459,19 +464,22 @@ struct EntryView: View {
         defaults.set("hook-started", forKey: "tippy_automation_last_status")
 
         if defaults.bool(forKey: "tippy_automation_open_scan_sheet") {
+            defaults.removeObject(forKey: "tippy_automation_open_scan_sheet")
             amountFocused = false
             showCamera = true
             defaults.set("opened-scan-sheet", forKey: "tippy_automation_last_status")
         }
 
-        if let configuredPath = defaults.string(forKey: "tippy_automation_autoscan_receipt_path"),
-           let resolvedPath = resolveAutomationImagePath(configuredPath),
-           let image = UIImage(contentsOfFile: resolvedPath) {
-            amountFocused = false
-            defaults.set("loaded-image:\(resolvedPath)", forKey: "tippy_automation_last_status")
-            scanReceipt(image)
-        } else if defaults.string(forKey: "tippy_automation_autoscan_receipt_path") != nil {
-            defaults.set("failed-to-load-image", forKey: "tippy_automation_last_status")
+        if let configuredPath = defaults.string(forKey: "tippy_automation_autoscan_receipt_path") {
+            defaults.removeObject(forKey: "tippy_automation_autoscan_receipt_path")
+            if let resolvedPath = resolveAutomationImagePath(configuredPath),
+               let image = UIImage(contentsOfFile: resolvedPath) {
+                amountFocused = false
+                defaults.set("loaded-image:\(resolvedPath)", forKey: "tippy_automation_last_status")
+                scanReceipt(image)
+            } else {
+                defaults.set("failed-to-load-image", forKey: "tippy_automation_last_status")
+            }
         }
 #endif
     }

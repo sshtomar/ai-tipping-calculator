@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tippy Icon Concepts — Geometric Precision</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    background: #0A0E14;
+    color: #E8EDF5;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6B839A;
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+  .palette-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .swatch-label {
+    font-size: 10px;
+    color: #6B839A;
+    font-family: 'SF Mono', monospace;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #141A22;
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #FF6840;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #6B839A;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .icon-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    justify-content: center;
+  }
+  .icon-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-size-label {
+    font-size: 10px;
+    color: #4A5568;
+    font-family: 'SF Mono', monospace;
+  }
+  .icon-wrap {
+    border-radius: 22.37%; /* iOS icon radius */
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .icon-wrap.s180 { width: 180px; height: 180px; border-radius: 22.37%; }
+  .icon-wrap.s80  { width: 80px;  height: 80px;  border-radius: 22.37%; }
+  .icon-wrap.s40  { width: 40px;  height: 40px;  border-radius: 22.37%; }
+  .icon-wrap svg { display: block; width: 100%; height: 100%; }
+
+  .notes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .notes li {
+    font-size: 12px;
+    color: #4A6580;
+    line-height: 1.6;
+    margin-left: 16px;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4A6580;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 56px 0 32px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Tippy — Icon Concepts</h1>
+<p class="subtitle">Geometrically constructed on a 1024-unit grid &middot; Coastline Citrus palette</p>
+
+<div class="palette-bar">
+  <div class="swatch"><div class="swatch-circle" style="background:#FF6840"></div><span class="swatch-label">#FF6840</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#CE4A2D"></div><span class="swatch-label">#CE4A2D</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#F6B31C"></div><span class="swatch-label">#F6B31C</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#10253F"></div><span class="swatch-label">#10253F</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#FFF8EE"></div><span class="swatch-label">#FFF8EE</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#24B39A"></div><span class="swatch-label">#24B39A</span></div>
+  <div class="swatch"><div class="swatch-circle" style="background:#4D90FF"></div><span class="swatch-label">#4D90FF</span></div>
+</div>
+
+<div class="grid">
+
+<!-- ============================================================ -->
+<!-- CONCEPT 1: Ticket Monogram (Geometrically Refined) -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">01</span></div>
+  <div class="card-title">Ticket Monogram — Refined</div>
+  <p class="card-desc">The existing concept rebuilt with geometric precision. Notches are perfect semicircles on a grid. The T uses consistent stroke width with square terminals. No borrowed sparkle — a small diamond accent uses the app's own yellow.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#10253F"/>
+              <stop offset="100%" stop-color="#1A3354"/>
+            </linearGradient>
+            <clipPath id="iosClip1">
+              <rect width="1024" height="1024" rx="229" ry="229"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#iosClip1)">
+            <!-- Background -->
+            <rect width="1024" height="1024" fill="url(#bg1)"/>
+
+            <!-- Ticket shape: rounded rect with semicircle notches -->
+            <g>
+              <!-- Main ticket body -->
+              <rect x="142" y="182" width="740" height="660" rx="64" ry="64" fill="#FFF8EE"/>
+              <!-- Left notch (semicircle cutout) -->
+              <circle cx="142" cy="512" r="72" fill="url(#bg1)"/>
+              <!-- Right notch (semicircle cutout) -->
+              <circle cx="882" cy="512" r="72" fill="url(#bg1)"/>
+            </g>
+
+            <!-- T letterform — geometric construction -->
+            <!-- Horizontal bar -->
+            <rect x="312" y="340" width="400" height="88" rx="12" ry="12" fill="#FF6840"/>
+            <!-- Vertical bar -->
+            <rect x="468" y="340" width="88" height="360" rx="12" ry="12" fill="#FF6840"/>
+            <!-- Subtle inner shadow on T for depth -->
+            <rect x="312" y="340" width="400" height="88" rx="12" ry="12" fill="#CE4A2D" opacity="0.2"/>
+
+            <!-- Small diamond accent — top right -->
+            <g transform="translate(780, 240) rotate(45)">
+              <rect x="-16" y="-16" width="32" height="32" rx="4" fill="#F6B31C"/>
+            </g>
+            <g transform="translate(808, 212) rotate(45)">
+              <rect x="-8" y="-8" width="16" height="16" rx="2" fill="#F6B31C" opacity="0.6"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="iosClip1b"><rect width="1024" height="1024" rx="229" ry="229"/></clipPath>
+          </defs>
+          <g clip-path="url(#iosClip1b)">
+            <rect width="1024" height="1024" fill="url(#bg1)"/>
+            <rect x="142" y="182" width="740" height="660" rx="64" ry="64" fill="#FFF8EE"/>
+            <circle cx="142" cy="512" r="72" fill="#10253F"/>
+            <circle cx="882" cy="512" r="72" fill="#10253F"/>
+            <rect x="312" y="340" width="400" height="88" rx="12" ry="12" fill="#FF6840"/>
+            <rect x="468" y="340" width="88" height="360" rx="12" ry="12" fill="#FF6840"/>
+            <rect x="312" y="340" width="400" height="88" rx="12" ry="12" fill="#CE4A2D" opacity="0.2"/>
+            <g transform="translate(780, 240) rotate(45)"><rect x="-16" y="-16" width="32" height="32" rx="4" fill="#F6B31C"/></g>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="iosClip1c"><rect width="1024" height="1024" rx="229" ry="229"/></clipPath></defs>
+          <g clip-path="url(#iosClip1c)">
+            <rect width="1024" height="1024" fill="#10253F"/>
+            <rect x="142" y="182" width="740" height="660" rx="64" ry="64" fill="#FFF8EE"/>
+            <circle cx="142" cy="512" r="72" fill="#10253F"/>
+            <circle cx="882" cy="512" r="72" fill="#10253F"/>
+            <rect x="312" y="340" width="400" height="88" rx="12" ry="12" fill="#FF6840"/>
+            <rect x="468" y="340" width="88" height="360" rx="12" ry="12" fill="#FF6840"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Notches are identical 72r semicircles, horizontally centered on the ticket edge</li>
+      <li>T uses 88-unit stroke width, 12r corner radius throughout</li>
+      <li>Diamond accent is the app's own yellow, not Gemini's gradient</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 2: Percentage Arc -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">02</span></div>
+  <div class="card-title">Percentage Arc</div>
+  <p class="card-desc">A bold circular arc wraps ~72% around a centered T — suggesting "finding the right percentage." The arc is the primary orange; the gap reveals the background. Reads instantly as "calculator."</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FFF8EE"/>
+              <stop offset="100%" stop-color="#FFF0DD"/>
+            </linearGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="1024" height="1024" fill="url(#bg2)"/>
+
+          <!-- Outer arc — 72% of circle (260 degrees) -->
+          <!-- Circle center: 512, 512, radius: 340 -->
+          <!-- Arc from -130deg to +130deg (260deg sweep), leaving 100deg gap at bottom-left -->
+          <g fill="none" stroke="#FF6840" stroke-width="80" stroke-linecap="round">
+            <path d="M 222.6 697.5 A 340 340 0 1 1 297.2 269.8"/>
+          </g>
+
+          <!-- Inner subtle ring -->
+          <circle cx="512" cy="512" r="260" fill="none" stroke="#FF6840" stroke-width="3" opacity="0.15"/>
+
+          <!-- T letterform — centered, geometric -->
+          <rect x="370" y="380" width="284" height="72" rx="10" ry="10" fill="#10253F"/>
+          <rect x="476" y="380" width="72" height="280" rx="10" ry="10" fill="#10253F"/>
+
+          <!-- Percentage dot at arc end -->
+          <circle cx="297" cy="270" r="24" fill="#F6B31C"/>
+
+          <!-- Small % symbol near gap -->
+          <g transform="translate(216, 740)" fill="#CE4A2D" opacity="0.5">
+            <circle cx="0" cy="0" r="14"/>
+            <circle cx="56" cy="-56" r="14"/>
+            <rect x="0" y="-56" width="8" height="72" rx="4" transform="rotate(35, 28, -28)"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <g fill="none" stroke="#FF6840" stroke-width="80" stroke-linecap="round">
+            <path d="M 222.6 697.5 A 340 340 0 1 1 297.2 269.8"/>
+          </g>
+          <rect x="370" y="380" width="284" height="72" rx="10" ry="10" fill="#10253F"/>
+          <rect x="476" y="380" width="72" height="280" rx="10" ry="10" fill="#10253F"/>
+          <circle cx="297" cy="270" r="24" fill="#F6B31C"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <g fill="none" stroke="#FF6840" stroke-width="96" stroke-linecap="round">
+            <path d="M 222.6 697.5 A 340 340 0 1 1 297.2 269.8"/>
+          </g>
+          <rect x="370" y="380" width="284" height="80" rx="10" ry="10" fill="#10253F"/>
+          <rect x="472" y="380" width="80" height="280" rx="10" ry="10" fill="#10253F"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Arc is 260 degrees of a 340r circle, 80-unit stroke with round caps</li>
+      <li>T is dark navy (#10253F) for contrast on cream background</li>
+      <li>Percentage symbol hint at small sizes, disappears gracefully</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 3: Coin Face -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">03</span></div>
+  <div class="card-title">Coin Face</div>
+  <p class="card-desc">A bold coin rendered head-on with concentric rings and the T embossed in the center. Universal "money" metaphor. The outer ring has a subtle tooth/reeded edge pattern. Warm gold gradient.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="coinGrad" x1="0.2" y1="0" x2="0.8" y2="1">
+              <stop offset="0%" stop-color="#FF8456"/>
+              <stop offset="50%" stop-color="#FF6840"/>
+              <stop offset="100%" stop-color="#CE4A2D"/>
+            </linearGradient>
+            <linearGradient id="coinBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#10253F"/>
+              <stop offset="100%" stop-color="#0D1D30"/>
+            </linearGradient>
+            <linearGradient id="coinHighlight" x1="0.3" y1="0" x2="0.7" y2="1">
+              <stop offset="0%" stop-color="#FFA880" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#CE4A2D" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="1024" height="1024" fill="url(#coinBg)"/>
+
+          <!-- Outer coin circle -->
+          <circle cx="512" cy="512" r="400" fill="url(#coinGrad)"/>
+
+          <!-- Reeded edge pattern (subtle notches) -->
+          <g stroke="#CE4A2D" stroke-width="3" opacity="0.3">
+            <circle cx="512" cy="512" r="392" fill="none" stroke-dasharray="12 8"/>
+          </g>
+
+          <!-- Inner ring -->
+          <circle cx="512" cy="512" r="340" fill="none" stroke="#FFF8EE" stroke-width="4" opacity="0.35"/>
+
+          <!-- Inner field -->
+          <circle cx="512" cy="512" r="300" fill="url(#coinGrad)" opacity="0.6"/>
+
+          <!-- Highlight -->
+          <circle cx="512" cy="512" r="400" fill="url(#coinHighlight)"/>
+
+          <!-- T letterform — embossed style -->
+          <rect x="352" y="368" width="320" height="72" rx="8" ry="8" fill="#FFF8EE" opacity="0.95"/>
+          <rect x="476" y="368" width="72" height="300" rx="8" ry="8" fill="#FFF8EE" opacity="0.95"/>
+          <!-- T shadow for emboss effect -->
+          <rect x="354" y="370" width="320" height="72" rx="8" ry="8" fill="#CE4A2D" opacity="0.15"/>
+          <rect x="478" y="370" width="72" height="300" rx="8" ry="8" fill="#CE4A2D" opacity="0.15"/>
+
+          <!-- Small star accent -->
+          <g transform="translate(700, 280)">
+            <polygon points="0,-20 5,-7 20,-7 8,3 12,18 0,10 -12,18 -8,3 -20,-7 -5,-7" fill="#F6B31C" opacity="0.8"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <circle cx="512" cy="512" r="400" fill="url(#coinGrad)"/>
+          <circle cx="512" cy="512" r="340" fill="none" stroke="#FFF8EE" stroke-width="4" opacity="0.35"/>
+          <circle cx="512" cy="512" r="300" fill="#FF6840" opacity="0.6"/>
+          <circle cx="512" cy="512" r="400" fill="url(#coinHighlight)"/>
+          <rect x="352" y="368" width="320" height="72" rx="8" ry="8" fill="#FFF8EE" opacity="0.95"/>
+          <rect x="476" y="368" width="72" height="300" rx="8" ry="8" fill="#FFF8EE" opacity="0.95"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <circle cx="512" cy="512" r="420" fill="#FF6840"/>
+          <circle cx="512" cy="512" r="340" fill="none" stroke="#FFF8EE" stroke-width="6" opacity="0.3"/>
+          <rect x="340" y="368" width="344" height="80" rx="8" ry="8" fill="#FFF8EE"/>
+          <rect x="472" y="368" width="80" height="300" rx="8" ry="8" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Concentric circles: 400r outer, 340r ring, 300r inner field</li>
+      <li>T is cream on orange — inverted from Concept 1 for variety</li>
+      <li>Reeded edge dash pattern evokes real coin texture</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 4: Split Check -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">04</span></div>
+  <div class="card-title">Split Check</div>
+  <p class="card-desc">A receipt split diagonally with the T straddling the divide. Left half cream, right half orange. Clean diagonal at exactly 45 degrees. Communicates splitting a bill. Minimalist, modern.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="splitClip">
+              <rect width="1024" height="1024"/>
+            </clipPath>
+            <clipPath id="leftHalf">
+              <polygon points="0,0 1024,0 0,1024"/>
+            </clipPath>
+            <clipPath id="rightHalf">
+              <polygon points="1024,0 1024,1024 0,1024"/>
+            </clipPath>
+          </defs>
+
+          <!-- Left half — cream -->
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+
+          <!-- Right half — orange -->
+          <g clip-path="url(#rightHalf)">
+            <rect width="1024" height="1024" fill="#FF6840"/>
+          </g>
+
+          <!-- Diagonal line -->
+          <line x1="0" y1="1024" x2="1024" y2="0" stroke="#CE4A2D" stroke-width="4" opacity="0.3"/>
+
+          <!-- T on left half (dark) -->
+          <g clip-path="url(#leftHalf)">
+            <rect x="332" y="348" width="360" height="76" rx="10" ry="10" fill="#10253F"/>
+            <rect x="474" y="348" width="76" height="328" rx="10" ry="10" fill="#10253F"/>
+          </g>
+
+          <!-- T on right half (cream) -->
+          <g clip-path="url(#rightHalf)">
+            <rect x="332" y="348" width="360" height="76" rx="10" ry="10" fill="#FFF8EE"/>
+            <rect x="474" y="348" width="76" height="328" rx="10" ry="10" fill="#FFF8EE"/>
+          </g>
+
+          <!-- Small receipt lines on left side -->
+          <g opacity="0.15" stroke="#10253F" stroke-width="4" stroke-linecap="round">
+            <line x1="200" y1="800" x2="320" y2="800"/>
+            <line x1="200" y1="830" x2="280" y2="830"/>
+            <line x1="200" y1="860" x2="340" y2="860"/>
+          </g>
+
+          <!-- Dollar hint on right side -->
+          <g opacity="0.2" fill="#FFF8EE">
+            <text x="740" y="260" font-family="Georgia, serif" font-size="64" font-weight="700">$</text>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="leftHalf2"><polygon points="0,0 1024,0 0,1024"/></clipPath>
+            <clipPath id="rightHalf2"><polygon points="1024,0 1024,1024 0,1024"/></clipPath>
+          </defs>
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <g clip-path="url(#rightHalf2)"><rect width="1024" height="1024" fill="#FF6840"/></g>
+          <g clip-path="url(#leftHalf2)">
+            <rect x="332" y="348" width="360" height="76" rx="10" ry="10" fill="#10253F"/>
+            <rect x="474" y="348" width="76" height="328" rx="10" ry="10" fill="#10253F"/>
+          </g>
+          <g clip-path="url(#rightHalf2)">
+            <rect x="332" y="348" width="360" height="76" rx="10" ry="10" fill="#FFF8EE"/>
+            <rect x="474" y="348" width="76" height="328" rx="10" ry="10" fill="#FFF8EE"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="leftHalf3"><polygon points="0,0 1024,0 0,1024"/></clipPath>
+            <clipPath id="rightHalf3"><polygon points="1024,0 1024,1024 0,1024"/></clipPath>
+          </defs>
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <g clip-path="url(#rightHalf3)"><rect width="1024" height="1024" fill="#FF6840"/></g>
+          <g clip-path="url(#leftHalf3)">
+            <rect x="320" y="340" width="384" height="84" rx="10" ry="10" fill="#10253F"/>
+            <rect x="470" y="340" width="84" height="344" rx="10" ry="10" fill="#10253F"/>
+          </g>
+          <g clip-path="url(#rightHalf3)">
+            <rect x="320" y="340" width="384" height="84" rx="10" ry="10" fill="#FFF8EE"/>
+            <rect x="470" y="340" width="84" height="344" rx="10" ry="10" fill="#FFF8EE"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Exact 45-degree diagonal split — mathematically clean</li>
+      <li>T color inverts across the split line for maximum contrast</li>
+      <li>Strong at all sizes — simplest concept here</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 5: Tip Tray / Balance -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">05</span></div>
+  <div class="card-title">Tip Tray</div>
+  <p class="card-desc">The T's horizontal bar doubles as a balance/tray, with a coin resting on each side. A visual pun: the "T" is literally a tip tray. Constructed from rectangles and circles on a centered axis.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg5" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10253F"/>
+              <stop offset="100%" stop-color="#162D4A"/>
+            </linearGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="1024" height="1024" fill="url(#bg5)"/>
+
+          <!-- Subtle grid circles for geometric construction feel -->
+          <circle cx="512" cy="512" r="420" fill="none" stroke="#1E3A58" stroke-width="1"/>
+          <circle cx="512" cy="512" r="300" fill="none" stroke="#1E3A58" stroke-width="1"/>
+
+          <!-- T as tip tray -->
+          <!-- Vertical stem -->
+          <rect x="476" y="400" width="72" height="320" rx="8" ry="8" fill="#FFF8EE"/>
+          <!-- Horizontal bar / tray -->
+          <rect x="232" y="360" width="560" height="72" rx="12" ry="12" fill="#FF6840"/>
+          <!-- Tray base lip -->
+          <rect x="252" y="420" width="520" height="8" rx="4" fill="#CE4A2D" opacity="0.4"/>
+
+          <!-- Left coin -->
+          <circle cx="340" cy="330" r="52" fill="#F6B31C"/>
+          <circle cx="340" cy="330" r="38" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.4"/>
+          <text x="340" y="344" text-anchor="middle" font-family="Georgia, serif" font-size="40" font-weight="700" fill="#CE4A2D" opacity="0.5">$</text>
+
+          <!-- Right coin -->
+          <circle cx="684" cy="330" r="52" fill="#F6B31C"/>
+          <circle cx="684" cy="330" r="38" fill="none" stroke="#FFF8EE" stroke-width="3" opacity="0.4"/>
+          <text x="684" y="344" text-anchor="middle" font-family="Georgia, serif" font-size="40" font-weight="700" fill="#CE4A2D" opacity="0.5">$</text>
+
+          <!-- Base platform -->
+          <rect x="400" y="700" width="224" height="16" rx="8" fill="#FFF8EE" opacity="0.3"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="476" y="400" width="72" height="320" rx="8" ry="8" fill="#FFF8EE"/>
+          <rect x="232" y="360" width="560" height="72" rx="12" ry="12" fill="#FF6840"/>
+          <circle cx="340" cy="330" r="52" fill="#F6B31C"/>
+          <circle cx="684" cy="330" r="52" fill="#F6B31C"/>
+          <rect x="400" y="700" width="224" height="16" rx="8" fill="#FFF8EE" opacity="0.3"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="472" y="400" width="80" height="320" rx="8" ry="8" fill="#FFF8EE"/>
+          <rect x="220" y="350" width="584" height="80" rx="12" ry="12" fill="#FF6840"/>
+          <circle cx="336" cy="316" r="60" fill="#F6B31C"/>
+          <circle cx="688" cy="316" r="60" fill="#F6B31C"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Visual pun: the T <em>is</em> a tip tray with coins balanced on top</li>
+      <li>All elements axis-aligned to center (512): coins are equidistant</li>
+      <li>Three-color simplicity: navy bg, orange bar, yellow coins</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 6: Negative Space T -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">06</span></div>
+  <div class="card-title">Negative Space T</div>
+  <p class="card-desc">The T is carved out of a solid orange circle as negative space, revealing the dark background beneath. Bold, modern, works at any size. A small arc at the bottom suggests a smile/satisfaction.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg6" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#0D1D30"/>
+              <stop offset="100%" stop-color="#10253F"/>
+            </linearGradient>
+            <mask id="tMask">
+              <rect width="1024" height="1024" fill="white"/>
+              <!-- T cutout -->
+              <rect x="312" y="300" width="400" height="80" rx="10" ry="10" fill="black"/>
+              <rect x="472" y="300" width="80" height="380" rx="10" ry="10" fill="black"/>
+            </mask>
+          </defs>
+          <!-- Background -->
+          <rect width="1024" height="1024" fill="url(#bg6)"/>
+
+          <!-- Main circle with T knocked out -->
+          <circle cx="512" cy="500" r="380" fill="#FF6840" mask="url(#tMask)"/>
+
+          <!-- Subtle inner glow -->
+          <circle cx="512" cy="500" r="380" fill="none" stroke="#FFA880" stroke-width="2" opacity="0.3"/>
+
+          <!-- Smile arc at bottom of circle -->
+          <path d="M 400 720 Q 512 780 624 720" fill="none" stroke="#F6B31C" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+
+          <!-- Tiny sparkle -->
+          <g transform="translate(760, 220)">
+            <line x1="0" y1="-14" x2="0" y2="14" stroke="#F6B31C" stroke-width="4" stroke-linecap="round"/>
+            <line x1="-14" y1="0" x2="14" y2="0" stroke="#F6B31C" stroke-width="4" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="tMask2">
+              <rect width="1024" height="1024" fill="white"/>
+              <rect x="312" y="300" width="400" height="80" rx="10" ry="10" fill="black"/>
+              <rect x="472" y="300" width="80" height="380" rx="10" ry="10" fill="black"/>
+            </mask>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <circle cx="512" cy="500" r="380" fill="#FF6840" mask="url(#tMask2)"/>
+          <path d="M 400 720 Q 512 780 624 720" fill="none" stroke="#F6B31C" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="tMask3">
+              <rect width="1024" height="1024" fill="white"/>
+              <rect x="300" y="290" width="424" height="88" rx="10" ry="10" fill="black"/>
+              <rect x="468" y="290" width="88" height="400" rx="10" ry="10" fill="black"/>
+            </mask>
+          </defs>
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <circle cx="512" cy="500" r="400" fill="#FF6840" mask="url(#tMask3)"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Single-shape construction: one circle, one T mask</li>
+      <li>Most scalable design — reads at even 16x16 favicon size</li>
+      <li>Smile arc adds warmth without complexity</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 7: Layered Badge -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">07</span></div>
+  <div class="card-title">Layered Badge</div>
+  <p class="card-desc">A rounded square badge with a subtle inner shadow and the T rendered as a bold, flat monogram. Clean layering: dark base, orange badge, cream T. No extra ornaments — pure confidence.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="badgeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FF7B54"/>
+              <stop offset="100%" stop-color="#E5522A"/>
+            </linearGradient>
+            <filter id="innerShadow">
+              <feFlood flood-color="#000" flood-opacity="0.15"/>
+              <feComposite in2="SourceGraphic" operator="out"/>
+              <feGaussianBlur stdDeviation="8"/>
+              <feComposite in2="SourceGraphic" operator="atop"/>
+            </filter>
+          </defs>
+          <!-- Background -->
+          <rect width="1024" height="1024" fill="#10253F"/>
+
+          <!-- Badge shape -->
+          <rect x="112" y="112" width="800" height="800" rx="180" ry="180" fill="url(#badgeGrad)" filter="url(#innerShadow)"/>
+
+          <!-- Inner border -->
+          <rect x="152" y="152" width="720" height="720" rx="150" ry="150" fill="none" stroke="#FFF8EE" stroke-width="4" opacity="0.15"/>
+
+          <!-- T letterform — large, bold, centered -->
+          <rect x="312" y="330" width="400" height="92" rx="14" ry="14" fill="#FFF8EE"/>
+          <rect x="466" y="330" width="92" height="370" rx="14" ry="14" fill="#FFF8EE"/>
+
+          <!-- Subtle bottom highlight -->
+          <rect x="312" y="792" width="400" height="4" rx="2" fill="#F6B31C" opacity="0.4"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="112" y="112" width="800" height="800" rx="180" ry="180" fill="#FF6840"/>
+          <rect x="152" y="152" width="720" height="720" rx="150" ry="150" fill="none" stroke="#FFF8EE" stroke-width="4" opacity="0.15"/>
+          <rect x="312" y="330" width="400" height="92" rx="14" ry="14" fill="#FFF8EE"/>
+          <rect x="466" y="330" width="92" height="370" rx="14" ry="14" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#10253F"/>
+          <rect x="100" y="100" width="824" height="824" rx="180" ry="180" fill="#FF6840"/>
+          <rect x="300" y="320" width="424" height="100" rx="14" ry="14" fill="#FFF8EE"/>
+          <rect x="462" y="320" width="100" height="384" rx="14" ry="14" fill="#FFF8EE"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Badge is an 800x800 rounded rect with 180r corners inside the iOS mask</li>
+      <li>T stroke is 92 units wide — bold enough to read at any scale</li>
+      <li>Gradient from #FF7B54 to #E5522A adds subtle depth</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONCEPT 8: Receipt Ribbon -->
+<!-- ============================================================ -->
+<div class="card">
+  <div class="card-header"><span class="card-label">08</span></div>
+  <div class="card-title">Receipt Ribbon</div>
+  <p class="card-desc">A vertical receipt ribbon with a torn bottom edge and the T printed on it. A horizontal color stripe across the middle adds energy. Background uses the warm cream. Feels like a real artifact.</p>
+  <div class="icon-row">
+    <div class="icon-frame">
+      <div class="icon-wrap s180">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <!-- Warm cream background -->
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+
+          <!-- Subtle dot grid pattern -->
+          <g fill="#10253F" opacity="0.04">
+            <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="2"/>
+            </pattern>
+            <rect width="1024" height="1024" fill="url(#dots)"/>
+          </g>
+
+          <!-- Receipt ribbon shape -->
+          <path d="M 312 80 L 712 80 L 712 880 Q 692 860 672 880 Q 652 900 632 880 Q 612 860 592 880 Q 572 900 552 880 Q 532 860 512 880 Q 492 900 472 880 Q 452 860 432 880 Q 412 900 392 880 Q 372 860 352 880 Q 332 900 312 880 Z"
+                fill="white" stroke="#D6DDE8" stroke-width="2"/>
+
+          <!-- Orange accent stripe -->
+          <rect x="312" y="480" width="400" height="56" fill="#FF6840"/>
+
+          <!-- Receipt lines -->
+          <g stroke="#D6DDE8" stroke-width="3" stroke-linecap="round">
+            <line x1="368" y1="580" x2="560" y2="580"/>
+            <line x1="368" y1="616" x2="500" y2="616"/>
+            <line x1="368" y1="652" x2="580" y2="652"/>
+            <line x1="550" y1="720" x2="656" y2="720"/>
+          </g>
+
+          <!-- Total line -->
+          <g stroke="#10253F" stroke-width="4" stroke-linecap="round">
+            <line x1="368" y1="720" x2="510" y2="720"/>
+          </g>
+
+          <!-- T on the receipt -->
+          <rect x="410" y="180" width="204" height="56" rx="8" ry="8" fill="#FF6840"/>
+          <rect x="484" y="180" width="56" height="240" rx="8" ry="8" fill="#FF6840"/>
+
+          <!-- Small AI badge -->
+          <rect x="628" y="140" width="56" height="56" rx="14" fill="#4D90FF"/>
+          <g transform="translate(656, 168)">
+            <polygon points="0,-12 3,-4 12,-4 5,2 7,12 0,7 -7,12 -5,2 -12,-4 -3,-4" fill="white" opacity="0.9"/>
+          </g>
+        </svg>
+      </div>
+      <span class="icon-size-label">180pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s80">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <path d="M 312 80 L 712 80 L 712 880 Q 692 860 672 880 Q 652 900 632 880 Q 612 860 592 880 Q 572 900 552 880 Q 532 860 512 880 Q 492 900 472 880 Q 452 860 432 880 Q 412 900 392 880 Q 372 860 352 880 Q 332 900 312 880 Z"
+                fill="white" stroke="#D6DDE8" stroke-width="2"/>
+          <rect x="312" y="480" width="400" height="56" fill="#FF6840"/>
+          <rect x="410" y="180" width="204" height="56" rx="8" ry="8" fill="#FF6840"/>
+          <rect x="484" y="180" width="56" height="240" rx="8" ry="8" fill="#FF6840"/>
+          <rect x="628" y="140" width="56" height="56" rx="14" fill="#4D90FF"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">80pt</span>
+    </div>
+    <div class="icon-frame">
+      <div class="icon-wrap s40">
+        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <rect width="1024" height="1024" fill="#FFF8EE"/>
+          <rect x="292" y="80" width="440" height="820" rx="12" fill="white" stroke="#D6DDE8" stroke-width="3"/>
+          <rect x="292" y="480" width="440" height="64" fill="#FF6840"/>
+          <rect x="400" y="180" width="224" height="64" rx="8" ry="8" fill="#FF6840"/>
+          <rect x="480" y="180" width="64" height="248" rx="8" ry="8" fill="#FF6840"/>
+        </svg>
+      </div>
+      <span class="icon-size-label">40pt</span>
+    </div>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Torn edge uses 10 identical quadratic Bezier scallops (20-unit amplitude)</li>
+      <li>Receipt width is exactly 400 units, centered at 512</li>
+      <li>Blue AI badge echoes the app's sky color without being Gemini-branded</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /grid -->
+
+<div class="section-title" style="margin-top:64px;">Geometric Construction Reference</div>
+<p style="text-align:center; color:#4A6580; font-size:13px; max-width:600px; margin:0 auto 40px;">
+  All icons are built on a 1024&times;1024 grid. The T letterform uses consistent proportions:
+  horizontal bar width = ~39% of canvas, stroke width = ~7.6%, corner radius = ~1%.
+  Shown at 180pt (App Store), 80pt (home screen), and 40pt (Spotlight).
+</p>
+
+</body>
+</html>
