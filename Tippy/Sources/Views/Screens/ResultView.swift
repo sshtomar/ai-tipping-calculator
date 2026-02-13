@@ -3,8 +3,14 @@ import SwiftUI
 struct ResultView: View {
     @Bindable var state: TipState
     var usageLimiter: UsageLimiter?
-    @State private var appeared = false
+    @State private var stage = 0
     @State private var showUpgrade = false
+    @State private var showCopied = false
+    @State private var shakeTrigger = 0
+    @State private var displayedDollars = 0
+    @State private var countUpTimer: Timer?
+    @State private var hasEngaged = false
+    @State private var heroPop: CGFloat = 1
 
     var body: some View {
         ScrollView {
@@ -12,7 +18,7 @@ struct ResultView: View {
                 // Back button
                 HStack {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
+                        withAnimation(TippySpring.gentle) {
                             state.currentScreen = .entry
                         }
                     } label: {
@@ -27,12 +33,6 @@ struct ResultView: View {
                     Spacer()
                 }
 
-                Text("TIP RESULT")
-                    .font(.tippyMono)
-                    .foregroundStyle(.tippyTextTertiary)
-                    .tracking(1.0)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
                 if let result = state.result {
                     if result.isRange {
                         rangeResult(result)
@@ -44,7 +44,7 @@ struct ResultView: View {
                 // Actions
                 VStack(spacing: TippySpacing.base) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
+                        withAnimation(TippySpring.gentle) {
                             state.reset()
                         }
                     } label: {
@@ -56,11 +56,11 @@ struct ResultView: View {
                         }
                         .tippySecondaryButton()
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(TippyPressableStyle())
 
                     if let result = state.result, !result.isRange {
                         Button {
-                            withAnimation(.easeInOut(duration: 0.25)) {
+                            withAnimation(TippySpring.gentle) {
                                 state.currentScreen = .entry
                             }
                         } label: {
@@ -74,14 +74,100 @@ struct ResultView: View {
                         }
                     }
                 }
+                .opacity(stage >= 4 ? 1 : 0)
+                .offset(y: stage >= 4 ? 0 : 10)
+                .animation(.easeOut(duration: TippyTiming.navigate), value: stage)
             }
             .padding(.horizontal, TippySpacing.xl)
             .padding(.top, TippySpacing.lg)
-            .padding(.bottom, TippySpacing.xxl)
+            .padding(.bottom, 100)
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.3)) {
-                appeared = true
+            advanceStages()
+        }
+        .onDisappear {
+            countUpTimer?.invalidate()
+            countUpTimer = nil
+        }
+        .onChange(of: state.selectedOption) { _, _ in
+            withAnimation(TippySpring.snappy) {
+                displayedDollars = state.currentTipDollars
+            }
+            // Hero card pop
+            withAnimation(TippySpring.pop) {
+                heroPop = 1.04
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(TippySpring.settle) {
+                    heroPop = 1
+                }
+            }
+        }
+    }
+
+    private var heroGradientColors: [Color] {
+        switch state.selectedOption {
+        case .lower:
+            return [.tippyYellow.opacity(0.18), .tippyRose.opacity(0.14)]
+        case .recommended:
+            return [.tippyYellow.opacity(0.18), .tippySky.opacity(0.12)]
+        case .higher:
+            return [.tippyGreen.opacity(0.14), .tippySky.opacity(0.16)]
+        }
+    }
+
+    // MARK: - Staged Entrance
+
+    private func advanceStages() {
+        // Stage 1: hero card (immediate)
+        withAnimation(TippySpring.pop) {
+            stage = 1
+        }
+        startCountUp(to: state.currentTipDollars)
+        // Stage 2: tip tabs (150ms)
+        DispatchQueue.main.asyncAfter(deadline: .now() + TippyTiming.instant) {
+            withAnimation(TippySpring.snappy) { stage = 2 }
+        }
+        // Stage 3: explanation (300ms)
+        DispatchQueue.main.asyncAfter(deadline: .now() + TippyTiming.entrance) {
+            withAnimation(TippySpring.settle) { stage = 3 }
+        }
+        // Stage 4: total + actions (400ms)
+        DispatchQueue.main.asyncAfter(deadline: .now() + TippyTiming.entrance + 0.1) {
+            withAnimation(.easeOut(duration: TippyTiming.navigate)) { stage = 4 }
+        }
+        // Deferred feedback: auto-show after 5s
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            if !hasEngaged {
+                withAnimation(TippySpring.gentle) {
+                    hasEngaged = true
+                }
+            }
+        }
+    }
+
+    private func startCountUp(to target: Int) {
+        countUpTimer?.invalidate()
+        guard target > 0 else {
+            displayedDollars = 0
+            return
+        }
+        displayedDollars = 0
+        let steps = min(target, 20)
+        let interval = 0.4 / Double(steps)
+        var current = 0
+        countUpTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+            current += 1
+            let progress = Double(current) / Double(steps)
+            withAnimation(.easeOut(duration: interval)) {
+                displayedDollars = Int(Double(target) * progress)
+            }
+            if current >= steps {
+                timer.invalidate()
+                countUpTimer = nil
+                withAnimation(.easeOut(duration: interval)) {
+                    displayedDollars = target
+                }
             }
         }
     }
@@ -120,8 +206,8 @@ struct ResultView: View {
 
             explanationCard(result.explanation)
         }
-        .scaleEffect(appeared ? 1 : 0.95)
-        .opacity(appeared ? 1 : 0)
+        .scaleEffect(stage >= 1 ? 1 : TippyScale.cardEntrance)
+        .opacity(stage >= 1 ? 1 : 0)
     }
 
     // MARK: - Full Result
@@ -136,7 +222,7 @@ struct ResultView: View {
     @ViewBuilder
     private func upgradeBanner() -> some View {
         VStack(spacing: TippySpacing.md) {
-            Text("You've used your 3 free AI tips today")
+            Text("You've used your free AI tip for today")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.tippyText)
             Button {
@@ -186,21 +272,30 @@ struct ResultView: View {
                 .foregroundStyle(.tippyPrimary)
                 .padding(.bottom, TippySpacing.xs)
 
-            Text("$\(state.currentTipDollars)")
+            Text("$\(displayedDollars)")
                 .font(.tippyHero)
                 .foregroundStyle(.tippyText)
+                .contentTransition(.numericText())
                 .blur(radius: state.isDiscreet ? 16 : 0)
+                .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
 
             Text("\(state.currentTipPercent)%")
                 .font(.tippyMoney)
                 .foregroundStyle(.tippyTextSecondary)
                 .blur(radius: state.isDiscreet ? 8 : 0)
+                .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
+
+            Text("on $\(Int(result.billAmount))")
+                .font(.system(size: 15, weight: .regular, design: .serif))
+                .foregroundStyle(.tippyTextTertiary)
+                .blur(radius: state.isDiscreet ? 8 : 0)
+                .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, TippySpacing.lg)
         .background(
             LinearGradient(
-                colors: [.tippyYellow.opacity(0.18), .tippySky.opacity(0.12)],
+                colors: heroGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -210,14 +305,16 @@ struct ResultView: View {
             RoundedRectangle(cornerRadius: TippyRadius.panel, style: .continuous)
                 .stroke(Color.tippyBorder, lineWidth: 1)
         )
-        .scaleEffect(appeared ? 1 : 0.92)
-        .opacity(appeared ? 1 : 0)
+        .animation(TippySpring.gentle, value: state.selectedOption)
+        .scaleEffect(stage >= 1 ? heroPop : TippyScale.popIn)
+        .opacity(stage >= 1 ? 1 : 0)
 
         // Tip option picker
         HStack(spacing: 0) {
-            tipTab("Acceptable", option: .lower, dollars: result.lowerDollars, percent: result.lowerPercent)
-            tipTab("Recommended", option: .recommended, dollars: result.recommendedDollars, percent: result.recommendedPercent)
-            tipTab("Generous", option: .higher, dollars: result.higherDollars, percent: result.higherPercent)
+            let labels = (state.serviceType ?? .other).tipLabels
+            tipTab(labels.lower, option: .lower, dollars: result.lowerDollars, percent: result.lowerPercent)
+            tipTab(labels.recommended, option: .recommended, dollars: result.recommendedDollars, percent: result.recommendedPercent)
+            tipTab(labels.higher, option: .higher, dollars: result.higherDollars, percent: result.higherPercent)
         }
         .padding(TippySpacing.xs)
         .background(Color.tippySurfaceSecondary)
@@ -226,43 +323,58 @@ struct ResultView: View {
             RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
                 .stroke(Color.tippyBorderLight, lineWidth: 1)
         )
+        .opacity(stage >= 2 ? 1 : 0)
+        .offset(y: stage >= 2 ? 0 : 8)
 
         // Explanation
         explanationCard(result.explanation)
+            .opacity(stage >= 3 ? 1 : 0)
+            .offset(y: stage >= 3 ? 0 : 10)
 
         // Total with tip
         VStack(spacing: TippySpacing.base) {
-            HStack {
-                Text("Total with tip")
-                    .font(.subheadline)
-                    .foregroundStyle(.tippyTextSecondary)
-                Spacer()
-                Text("$\(state.currentTotal, specifier: "%.2f")")
-                    .font(.tippyTitle)
-                    .monospacedDigit()
-                    .foregroundStyle(.tippyText)
-                    .blur(radius: state.isDiscreet ? 12 : 0)
-            }
-
             if state.splitCount > 1 {
-                Divider()
-
-                HStack(alignment: .firstTextBaseline, spacing: TippySpacing.sm) {
-                    Text("$\(state.perPersonAmount, specifier: "%.2f")")
-                        .font(.tippyTitle)
-                        .monospacedDigit()
-                        .foregroundStyle(.tippyText)
+                // Per-person primary
+                VStack(spacing: TippySpacing.xs) {
+                    moneyText(state.perPersonAmount)
                         .blur(radius: state.isDiscreet ? 12 : 0)
+                        .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
                     Text("per person")
                         .font(.subheadline)
                         .foregroundStyle(.tippyTextTertiary)
                 }
+                .frame(maxWidth: .infinity)
                 .transition(.move(edge: .top).combined(with: .opacity))
+
+                Divider()
+
+                // Total secondary
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Total with tip")
+                        .font(.caption)
+                        .foregroundStyle(.tippyTextTertiary)
+                    Spacer()
+                    Text("$\(String(format: "%.2f", state.currentTotal))")
+                        .font(.system(size: 16, weight: .semibold, design: .serif))
+                        .foregroundStyle(.tippyTextSecondary)
+                        .blur(radius: state.isDiscreet ? 12 : 0)
+                        .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Total with tip")
+                        .font(.subheadline)
+                        .foregroundStyle(.tippyTextSecondary)
+                    Spacer()
+                    moneyText(state.currentTotal)
+                        .blur(radius: state.isDiscreet ? 12 : 0)
+                        .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
+                }
             }
 
             Divider()
 
-            // Split stepper — always visible inside the total card
+            // Split stepper
             HStack {
                 Text("Split")
                     .font(.subheadline)
@@ -270,41 +382,71 @@ struct ResultView: View {
                 Spacer()
                 HStack(spacing: TippySpacing.xs) {
                     stepperButton("minus") {
-                        if state.splitCount > 1 { state.splitCount -= 1 }
+                        if state.splitCount > 1 {
+                            state.splitCount -= 1
+                        } else {
+                            withAnimation(TippySpring.snappy) { shakeTrigger += 1 }
+                        }
                     }
                     Text("\(state.splitCount)")
                         .font(.body.weight(.semibold).monospacedDigit())
                         .frame(minWidth: TippySpacing.xxl)
+                        .shake(trigger: shakeTrigger)
                     stepperButton("plus") {
-                        if state.splitCount < 20 { state.splitCount += 1 }
+                        if state.splitCount < 20 {
+                            state.splitCount += 1
+                        } else {
+                            withAnimation(TippySpring.snappy) { shakeTrigger += 1 }
+                        }
                     }
                 }
             }
         }
         .padding(TippySpacing.base)
         .tippyCard()
-        .animation(.easeInOut(duration: 0.15), value: state.splitCount)
+        .animation(TippySpring.snappy, value: state.splitCount)
+        .opacity(stage >= 4 ? 1 : 0)
+        .offset(y: stage >= 4 ? 0 : 10)
 
         // Quick actions row
         HStack(spacing: TippySpacing.sm) {
-            quickAction(icon: "doc.on.doc", label: "Copy") {
+            quickAction(
+                icon: showCopied ? "checkmark.circle.fill" : "doc.on.doc",
+                label: showCopied ? "Copied!" : "Copy"
+            ) {
                 UIPasteboard.general.string = "$\(state.currentTipDollars)"
+                withAnimation(TippySpring.snappy) {
+                    showCopied = true
+                    hasEngaged = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation(TippySpring.snappy) {
+                        showCopied = false
+                    }
+                }
             }
             quickAction(
                 icon: state.isDiscreet ? "eye.slash" : "eye",
                 label: "Discreet"
             ) {
-                withAnimation(.easeInOut(duration: 0.15)) {
+                withAnimation(TippySpring.snappy) {
                     state.isDiscreet.toggle()
                 }
             }
             quickAction(icon: "square.and.arrow.up", label: "Share") {
+                withAnimation(TippySpring.snappy) {
+                    hasEngaged = true
+                }
                 shareResult()
             }
         }
+        .opacity(stage >= 4 ? 1 : 0)
 
-        // Feedback
-        feedbackSection()
+        // Feedback (deferred until user engages or 5s timeout)
+        if hasEngaged {
+            feedbackSection()
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
     }
 
     // MARK: - Components
@@ -313,7 +455,7 @@ struct ResultView: View {
     private func tipTab(_ label: String, option: TipOption, dollars: Int, percent: Int) -> some View {
         let isSelected = state.selectedOption == option
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(TippySpring.snappy) {
                 state.selectedOption = option
             }
         } label: {
@@ -322,39 +464,56 @@ struct ResultView: View {
                     .font(.tippyMoney)
                     .foregroundStyle(isSelected ? .tippyText : .tippyTextSecondary)
                     .blur(radius: state.isDiscreet ? 8 : 0)
+                    .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
                 Text(label)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? .tippyPrimary : .tippyTextTertiary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, TippySpacing.md)
             .background(isSelected ? Color.tippySurface : .clear)
             .clipShape(RoundedRectangle(cornerRadius: TippyRadius.chip, style: .continuous))
+            .overlay(alignment: .bottom) {
+                if isSelected {
+                    Capsule()
+                        .fill(Color.tippyPrimary)
+                        .frame(width: 24, height: 3)
+                        .offset(y: -4)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TippyPressableStyle())
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 
     @ViewBuilder
     private func explanationCard(_ text: String) -> some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .top, spacing: 0) {
             RoundedRectangle(cornerRadius: TippyRadius.accent)
                 .fill(Color.tippyPrimary)
                 .frame(width: 3)
                 .padding(.vertical, TippySpacing.xs)
 
-            Text(text)
-                .font(.callout)
-                .foregroundStyle(.tippyTextSecondary)
-                .lineSpacing(5)
-                .padding(.leading, TippySpacing.base)
-                .padding(.vertical, 2)
+            VStack(alignment: .leading, spacing: TippySpacing.xs) {
+                Text("\u{201C}")
+                    .font(.system(size: 28, design: .serif))
+                    .foregroundStyle(.tippyPrimary.opacity(0.4))
+
+                Text(text)
+                    .font(.body)
+                    .foregroundStyle(.tippyTextSecondary)
+                    .lineSpacing(5)
+            }
+            .padding(.leading, TippySpacing.base)
+            .padding(.vertical, 2)
         }
-        .padding(TippySpacing.base)
+        .padding(TippySpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.tippySurfaceSecondary)
         .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
         .blur(radius: state.isDiscreet ? 8 : 0)
+        .animation(.easeInOut(duration: TippyTiming.navigate), value: state.isDiscreet)
     }
 
     @ViewBuilder
@@ -363,16 +522,35 @@ struct ResultView: View {
             VStack(spacing: TippySpacing.sm) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .medium))
+                    .contentTransition(.symbolEffect(.replace))
                 Text(label)
                     .font(.system(size: 10, weight: .medium))
             }
-            .foregroundStyle(.tippyTextSecondary)
+            .foregroundStyle(label == "Copied!" ? .tippyGreen : .tippyTextSecondary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, TippySpacing.md)
             .tippyCard()
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TippyPressableStyle())
         .sensoryFeedback(.impact(flexibility: .soft), trigger: state.isDiscreet)
+    }
+
+    @ViewBuilder
+    private func moneyText(_ amount: Double) -> some View {
+        let formatted = String(format: "%.2f", amount)
+        let parts = formatted.split(separator: ".")
+        let dollars = String(parts[0])
+        let cents = parts.count > 1 ? ".\(parts[1])" : ""
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+            Text("$\(dollars)")
+                .font(.system(size: 28, weight: .bold, design: .serif))
+                .monospacedDigit()
+                .foregroundStyle(.tippyText)
+            Text(cents)
+                .font(.system(size: 20, weight: .regular, design: .serif))
+                .monospacedDigit()
+                .foregroundStyle(.tippyTextTertiary)
+        }
     }
 
     @ViewBuilder
@@ -385,7 +563,7 @@ struct ResultView: View {
                 .foregroundStyle(.tippyText)
                 .clipShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TippyPressableStyle())
         .sensoryFeedback(.selection, trigger: state.splitCount)
     }
 
@@ -410,7 +588,7 @@ struct ResultView: View {
         let isSelected = state.feedbackGiven == value
         let isJustRight = value == "just_right"
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(TippySpring.snappy) {
                 state.feedbackGiven = value
             }
             saveFeedback(value)
@@ -433,7 +611,7 @@ struct ResultView: View {
                 )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TippyPressableStyle())
         .sensoryFeedback(.success, trigger: isSelected)
     }
 
@@ -480,7 +658,7 @@ struct ResultView: View {
         lowerPercent: 16,
         higherDollars: 34,
         higherPercent: 24,
-        explanation: "Date night — you want the tip to be invisible. $28 on a $142 bill is generous without making a thing of it.",
+        explanation: "Date night \u{2014} you want the tip to be invisible. $28 on a $142 bill is generous without making a thing of it.",
         totalWithTip: 170,
         billAmount: 142
     )
