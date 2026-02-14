@@ -5,6 +5,7 @@ struct ReceiptScanner {
 
     enum ScanSource {
         case claudeVision
+        case claudeText
         case onDeviceOCR
     }
 
@@ -22,18 +23,32 @@ struct ReceiptScanner {
     }
 
     static func scan(image: UIImage) async -> ScanResult? {
-        // Try Claude Vision first for richer data
-        if let result = try? await scanWithClaude(image: image) {
+        guard let cgImage = image.cgImage else { return nil }
+
+        // Step 1: On-device OCR to get text lines
+        let lines = await recognizeTextLines(in: cgImage)
+
+        // Step 2: Send text to Claude Haiku for structured extraction
+        if !lines.isEmpty,
+           let result = try? await scanWithClaudeText(lines: lines) {
             return result
         }
-        // Fall back to on-device OCR
-        return await scanWithOCR(image: image)
+
+        // Step 3: Fallback to heuristic amount extraction from OCR lines
+        if !lines.isEmpty {
+            let amounts = extractAmounts(from: lines)
+            if !amounts.isEmpty {
+                return ScanResult(amount: amounts[0], allAmounts: amounts)
+            }
+        }
+
+        return nil
     }
 
-    // MARK: - Claude Vision
+    // MARK: - Claude Text Analysis (Haiku, text-only)
 
-    private static func scanWithClaude(image: UIImage) async throws -> ScanResult {
-        let analysis = try await ClaudeVisionService.analyzeReceipt(image: image)
+    private static func scanWithClaudeText(lines: [String]) async throws -> ScanResult {
+        let analysis = try await ClaudeVisionService.analyzeReceiptText(lines: lines)
         return ScanResult(
             amount: analysis.total,
             allAmounts: [analysis.total],
@@ -44,22 +59,13 @@ struct ReceiptScanner {
             venueName: analysis.venueName,
             autoGratuityIncluded: analysis.autoGratuityIncluded,
             autoGratuityAmount: analysis.autoGratuityAmount,
-            source: .claudeVision
+            source: .claudeText
         )
     }
 
-    // MARK: - On-Device OCR (existing logic, unchanged)
+    // MARK: - On-Device OCR
 
-    private static func scanWithOCR(image: UIImage) async -> ScanResult? {
-        guard let cgImage = image.cgImage else { return nil }
-
-        let amounts = await recognizeAmounts(in: cgImage)
-        guard !amounts.isEmpty else { return nil }
-
-        return ScanResult(amount: amounts[0], allAmounts: amounts)
-    }
-
-    private static func recognizeAmounts(in image: CGImage) async -> [Double] {
+    private static func recognizeTextLines(in image: CGImage) async -> [String] {
         await withCheckedContinuation { continuation in
             let request = VNRecognizeTextRequest { request, _ in
                 guard let observations = request.results as? [VNRecognizedTextObservation] else {
@@ -68,8 +74,7 @@ struct ReceiptScanner {
                 }
 
                 let lines = observations.compactMap { $0.topCandidates(1).first?.string }
-                let amounts = extractAmounts(from: lines)
-                continuation.resume(returning: amounts)
+                continuation.resume(returning: lines)
             }
 
             request.recognitionLevel = .accurate

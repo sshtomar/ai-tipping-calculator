@@ -51,6 +51,17 @@ enum ServiceType: String, CaseIterable, Identifiable, Codable {
         case .other: "sparkles"
         }
     }
+
+    var tipLabels: (lower: String, recommended: String, higher: String) {
+        switch self {
+        case .restaurant, .bar:       ("Good", "Great", "Generous")
+        case .cafe, .delivery:        ("Standard", "Solid", "Generous")
+        case .rideshare:              ("Fair", "Solid", "Generous")
+        case .salon, .spa, .tattoo:   ("Respectful", "Generous", "Very Generous")
+        default:                      ("Good", "Great", "Generous")
+        }
+    }
+
 }
 
 enum ContextTag: String, CaseIterable, Identifiable, Codable {

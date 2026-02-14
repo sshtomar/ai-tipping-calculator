@@ -10,9 +10,11 @@ struct EntryView: View {
     @State private var isScanning = false
     @State private var cameraPermission: AVAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
     @State private var didRunAutomationHooks = false
+    @State private var primaryServices: [ServiceType] = defaultPrimary
+    @State private var secondaryServices: [ServiceType] = defaultSecondary
 
-    private static let primary: [ServiceType] = [.restaurant, .bar, .cafe, .delivery, .rideshare, .salon]
-    private static let secondary: [ServiceType] = [.spa, .tattoo, .valet, .hotel, .movers, .other]
+    private static let defaultPrimary: [ServiceType] = [.restaurant, .bar, .cafe, .delivery, .rideshare, .salon]
+    private static let defaultSecondary: [ServiceType] = [.spa, .tattoo, .valet, .hotel, .movers, .other]
 
     @AppStorage("hasSeenTippy") private var hasSeenTippy = false
     private var hasCameraHardware: Bool {
@@ -20,244 +22,145 @@ struct EntryView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        GeometryReader { geo in
             ScrollView {
-                VStack(alignment: .leading, spacing: TippySpacing.xl) {
-                    VStack(alignment: .leading, spacing: TippySpacing.sm) {
-                        Text("TIP CALCULATOR")
-                            .font(.tippyMono)
-                            .foregroundStyle(.tippyTextTertiary)
-                            .tracking(1.0)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Tippy")
-                                .font(.tippyTitle)
-                                .foregroundStyle(.tippyText)
-
-                            Text("Know what to tip, always.")
-                                .font(.subheadline)
-                                .foregroundStyle(.tippyTextSecondary)
-                        }
+                VStack(alignment: .leading, spacing: 0) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Tippy")
+                            .font(.tippyTitle)
+                            .foregroundStyle(.tippyText)
+                        Text("Know what to tip, always.")
+                            .font(.subheadline)
+                            .foregroundStyle(.tippyTextSecondary)
                     }
                     .padding(.top, TippySpacing.sm)
+                    .padding(.bottom, TippySpacing.xl)
 
-                    // Receipt scan
-                    receiptScanSection()
-
-                    // Divider
-                    HStack(spacing: TippySpacing.md) {
-                        Rectangle().fill(Color.tippyBorder).frame(height: 0.5)
-                        Text("or enter manually")
-                            .font(.caption)
-                            .foregroundStyle(.tippyTextTertiary)
-                        Rectangle().fill(Color.tippyBorder).frame(height: 0.5)
+                    // Inputs group: bill + service type (tighter spacing)
+                    VStack(alignment: .leading, spacing: TippySpacing.base) {
+                        billTotalSection()
+                        serviceTypeSection()
                     }
 
-                    // Bill total
-                    billTotalSection()
+                    Spacer(minLength: TippySpacing.xxxl)
 
-                    // Service type
-                    serviceTypeSection()
+                    // Actions group
+                    VStack(alignment: .leading, spacing: TippySpacing.base) {
+                        // No bill link — plain text, no pill
+                        Button {
+                            withAnimation(TippySpring.gentle) {
+                                state.currentScreen = .noBill
+                            }
+                        } label: {
+                            HStack(spacing: TippySpacing.xs) {
+                                Text("No bill? Just need advice")
+                                Image(systemName: "arrow.right")
+                                    .font(.caption2.weight(.semibold))
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.tippyTextTertiary)
+                        }
 
-                    // No bill link
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            state.currentScreen = .noBill
+                        // Next button
+                        Button {
+                            withAnimation(TippySpring.gentle) {
+                                state.currentScreen = .context
+                            }
+                        } label: {
+                            HStack {
+                                Text("Next")
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                                    .font(.body.weight(.medium))
+                            }
+                            .tippyPrimaryButton(enabled: state.canProceed)
                         }
-                    } label: {
-                        HStack(spacing: TippySpacing.sm) {
-                            Text("No bill? Just need advice")
-                            Image(systemName: "arrow.right")
-                                .font(.caption.weight(.semibold))
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(.tippyTextSecondary)
-                        .padding(.horizontal, TippySpacing.base)
-                        .padding(.vertical, TippySpacing.sm)
-                        .background(Color.tippySurface.opacity(0.8))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.tippyBorder, lineWidth: 1))
+                        .disabled(!state.canProceed)
                     }
                 }
                 .padding(.horizontal, TippySpacing.xl)
                 .padding(.bottom, TippySpacing.xl)
+                .frame(minHeight: geo.size.height)
             }
-            .scrollDismissesKeyboard(.interactively)
-
-            // Sticky bottom
-            VStack(spacing: 0) {
-                Divider()
-                Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        state.currentScreen = .context
-                    }
-                } label: {
-                    HStack {
-                        Text("Next")
-                        Spacer()
-                        Image(systemName: "arrow.right")
-                            .font(.body.weight(.medium))
-                    }
-                    .tippyPrimaryButton(enabled: state.canProceed)
-                }
-                .disabled(!state.canProceed)
-                .padding(.horizontal, TippySpacing.xl)
-                .padding(.top, TippySpacing.md)
-                .padding(.bottom, TippySpacing.sm)
-            }
-            .background(.ultraThinMaterial)
         }
+        .scrollDismissesKeyboard(.interactively)
         .onAppear {
             cameraPermission = AVCaptureDevice.authorizationStatus(for: .video)
             runAutomationHooksIfNeeded()
+            snapshotServiceGrid()
+            if state.amount.isEmpty {
+                amountFocused = true
+            }
         }
         .onChange(of: state.serviceType) { _, newValue in
-            if let newValue, Self.secondary.contains(newValue) {
+            if let newValue, secondaryServices.contains(newValue) {
                 showMore = true
             }
         }
     }
 
-    // MARK: - Receipt Scan
+    // MARK: - Scan Button
 
     @ViewBuilder
-    private func receiptScanSection() -> some View {
-        if !hasCameraHardware {
-            Button {
-                amountFocused = false
-                showCamera = true
-            } label: {
-                HStack(spacing: TippySpacing.md) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.tippyPrimaryLight)
-                            .frame(width: TippySpacing.xxl + TippySpacing.xs, height: TippySpacing.xxl + TippySpacing.xs)
-                        Image(systemName: "photo.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.tippyPrimary)
+    private func scanButton() -> some View {
+        if !isScanning {
+            if cameraPermission == .denied || cameraPermission == .restricted {
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
                     }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Choose receipt photo")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.tippyText)
-                        Text("Camera unavailable on this device")
-                            .font(.caption)
-                            .foregroundStyle(.tippyTextTertiary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tippyTextTertiary)
+                } label: {
+                    scanButtonIcon(systemName: "camera.badge.ellipsis")
                 }
-                .padding(.horizontal, TippySpacing.base)
-                .padding(.vertical, TippySpacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color.tippyYellow.opacity(0.16),
-                            Color.tippySky.opacity(0.08),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
-                        .stroke(Color.tippyBorder, lineWidth: 1)
-                )
-            }
-            .buttonStyle(.plain)
-            .fullScreenCover(isPresented: $showCamera) {
-                CameraView { image in
-                    scanReceipt(image)
-                }
-                .ignoresSafeArea()
-            }
-        } else if cameraPermission == .denied || cameraPermission == .restricted {
-            Button {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-            } label: {
-                HStack(spacing: TippySpacing.sm) {
-                    Image(systemName: "camera.badge.ellipsis")
-                        .font(.body)
-                    Text("Enable camera to scan receipts")
-                        .font(.subheadline)
-                }
-                .tippySecondaryButton()
-            }
-            .buttonStyle(.plain)
-        } else {
-            Button {
-                amountFocused = false
-                if cameraPermission == .notDetermined {
-                    AVCaptureDevice.requestAccess(for: .video) { granted in
-                        DispatchQueue.main.async {
-                            cameraPermission = AVCaptureDevice.authorizationStatus(for: .video)
-                            if granted {
-                                showCamera = true
+                .buttonStyle(.plain)
+                .accessibilityLabel("Enable camera access")
+            } else if hasCameraHardware {
+                Button {
+                    amountFocused = false
+                    if cameraPermission == .notDetermined {
+                        AVCaptureDevice.requestAccess(for: .video) { granted in
+                            DispatchQueue.main.async {
+                                cameraPermission = AVCaptureDevice.authorizationStatus(for: .video)
+                                if granted {
+                                    showCamera = true
+                                }
                             }
                         }
+                    } else {
+                        showCamera = true
                     }
-                } else {
+                } label: {
+                    scanButtonIcon(systemName: "camera.fill")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Scan receipt")
+            } else {
+                Button {
+                    amountFocused = false
                     showCamera = true
+                } label: {
+                    scanButtonIcon(systemName: "photo.fill")
                 }
-            } label: {
-                HStack(spacing: TippySpacing.md) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.tippyPrimaryLight)
-                            .frame(width: TippySpacing.xxl + TippySpacing.xs, height: TippySpacing.xxl + TippySpacing.xs)
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.tippyPrimary)
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Scan your receipt")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.tippyText)
-                        Text("Auto-detect bill total")
-                            .font(.caption)
-                            .foregroundStyle(.tippyTextTertiary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tippyTextTertiary)
-                }
-                .padding(.horizontal, TippySpacing.base)
-                .padding(.vertical, TippySpacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color.tippyYellow.opacity(0.16),
-                            Color.tippySky.opacity(0.08),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
-                        .stroke(Color.tippyBorder, lineWidth: 1)
-                )
+                .buttonStyle(.plain)
+                .accessibilityLabel("Choose receipt photo")
             }
-            .buttonStyle(.plain)
-            .fullScreenCover(isPresented: $showCamera) {
-                CameraView { image in
-                    scanReceipt(image)
-                }
-                .ignoresSafeArea()
+        }
+    }
+
+    private func scanButtonIcon(systemName: String) -> some View {
+        VStack(spacing: 2) {
+            ZStack {
+                Circle()
+                    .fill(Color.tippyPrimaryLight)
+                    .frame(width: 36, height: 36)
+                Image(systemName: systemName)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.tippyPrimary)
             }
+            Text("Scan")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.tippyPrimary)
         }
     }
 
@@ -272,10 +175,10 @@ struct EntryView: View {
                 .tracking(1.0)
 
             ZStack {
-                HStack(alignment: .firstTextBaseline, spacing: TippySpacing.xs) {
+                HStack(spacing: TippySpacing.xs) {
                     Text("$")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle(.tippyTextTertiary)
+                        .font(.system(size: 28, weight: .bold, design: .serif))
+                        .foregroundStyle(.tippyTextSecondary)
 
                     TextField("0.00", text: $state.amount)
                         .font(.tippyMoneyLarge)
@@ -293,9 +196,13 @@ struct EntryView: View {
                                 .tint(.tippyPrimary)
                             }
                         }
+
+                    Spacer(minLength: 0)
+
+                    scanButton()
                 }
                 .padding(.horizontal, TippySpacing.base)
-                .padding(.vertical, TippySpacing.base)
+                .padding(.vertical, TippySpacing.lg)
                 .opacity(isScanning ? 0.3 : 1)
 
                 if isScanning {
@@ -310,29 +217,22 @@ struct EntryView: View {
                     }
                 }
             }
-            .tippyCard(isActive: amountFocused)
+            .background(Color.tippySurface.opacity(0.6))
+            .clipShape(RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: TippyRadius.card, style: .continuous)
+                    .stroke(
+                        amountFocused ? Color.tippyPrimary.opacity(0.85) : Color.tippyBorder,
+                        lineWidth: amountFocused ? 1.5 : 1
+                    )
+            )
 
-            // Quick amounts — bordered capsules
-            if state.amount.isEmpty && !isScanning {
-                HStack(spacing: TippySpacing.sm) {
-                    ForEach([20, 50, 100], id: \.self) { amount in
-                        Button {
-                            state.amount = "\(amount)"
-                            amountFocused = false
-                        } label: {
-                            Text("$\(amount)")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.tippyText)
-                                .padding(.horizontal, TippySpacing.base)
-                                .padding(.vertical, TippySpacing.sm)
-                                .overlay(Capsule().stroke(Color.tippyBorder, lineWidth: 1))
-                        }
-                    }
-
-                    Spacer()
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+}
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraView { image in
+                scanReceipt(image)
             }
+            .ignoresSafeArea()
         }
     }
 
@@ -341,49 +241,40 @@ struct EntryView: View {
     @ViewBuilder
     private func serviceTypeSection() -> some View {
         VStack(alignment: .leading, spacing: TippySpacing.md) {
-            HStack {
-                Text("SERVICE TYPE")
-                    .font(.tippyLabel)
-                    .foregroundStyle(.tippyTextSecondary)
-                    .tracking(1.0)
-
-                Spacer()
-
-                if let type = state.serviceType {
-                    Text(type.displayName)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tippyPrimary)
-                        .transition(.opacity)
-                }
-            }
+            Text("SERVICE TYPE")
+                .font(.tippyLabel)
+                .foregroundStyle(.tippyTextSecondary)
+                .tracking(1.0)
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: TippySpacing.sm),
                 GridItem(.flexible(), spacing: TippySpacing.sm),
                 GridItem(.flexible(), spacing: TippySpacing.sm),
             ], spacing: TippySpacing.sm) {
-                ForEach(Self.primary) { type in
+                ForEach(primaryServices) { type in
                     ServiceTypeButton(
                         type: type,
                         isSelected: state.serviceType == type
                     ) {
-                        withAnimation(.easeInOut(duration: 0.15)) {
+                        withAnimation(TippySpring.snappy) {
                             state.serviceType = type
                             amountFocused = false
                         }
+                        Self.recordUsage(for: type)
                     }
                 }
 
                 if showMore {
-                    ForEach(Self.secondary) { type in
+                    ForEach(secondaryServices) { type in
                         ServiceTypeButton(
                             type: type,
                             isSelected: state.serviceType == type
                         ) {
-                            withAnimation(.easeInOut(duration: 0.15)) {
+                            withAnimation(TippySpring.snappy) {
                                 state.serviceType = type
                                 amountFocused = false
                             }
+                            Self.recordUsage(for: type)
                         }
                     }
                 }
@@ -391,7 +282,7 @@ struct EntryView: View {
 
             if !showMore {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    withAnimation(TippySpring.gentle) {
                         showMore = true
                     }
                 } label: {
@@ -428,7 +319,7 @@ struct EntryView: View {
                 if result.source == .onDeviceOCR && result.allAmounts.count > 1 {
                     state.pendingScanResult = result
                     isScanning = false
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    withAnimation(TippySpring.gentle) {
                         state.currentScreen = .receiptConfirmation
                     }
                     return
@@ -506,6 +397,30 @@ struct EntryView: View {
         return candidates.first(where: { fileManager.fileExists(atPath: $0) })
     }
 #endif
+
+    // MARK: - Service Usage Tracking
+
+    private static let usageKey = "tippy_service_usage"
+
+    private static func serviceUsage() -> [String: Int] {
+        UserDefaults.standard.dictionary(forKey: usageKey) as? [String: Int] ?? [:]
+    }
+
+    static func recordUsage(for type: ServiceType) {
+        var usage = serviceUsage()
+        usage[type.rawValue, default: 0] += 1
+        UserDefaults.standard.set(usage, forKey: usageKey)
+    }
+
+    private func snapshotServiceGrid() {
+        let usage = Self.serviceUsage()
+        let distinctUsed = usage.filter { $0.value > 0 }.count
+        guard distinctUsed >= 3 else { return }
+        let sorted = ServiceType.allCases.sorted { (usage[$0.rawValue] ?? 0) > (usage[$1.rawValue] ?? 0) }
+        primaryServices = Array(sorted.prefix(6))
+        let primarySet = Set(primaryServices)
+        secondaryServices = ServiceType.allCases.filter { !primarySet.contains($0) }
+    }
 }
 
 // MARK: - Service Type Button
@@ -536,7 +451,7 @@ private struct ServiceTypeButton: View {
             .background(isSelected ? Color.tippyPrimaryLight : Color.tippySurface)
             .tippyCard(isActive: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TippyPressableStyle())
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 }

@@ -34,7 +34,7 @@ enum ClaudeVisionService {
         let base64 = jpeg.base64EncodedString()
 
         let body: [String: Any] = [
-            "model": ClaudeAPIConfig.model,
+            "model": ClaudeAPIConfig.visionModel,
             "max_tokens": 512,
             "messages": [
                 [
@@ -74,6 +74,70 @@ enum ClaudeVisionService {
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue(ClaudeAPIConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
         request.timeoutInterval = ClaudeAPIConfig.timeoutSeconds
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let data: Data
+        do {
+            let (responseData, response) = try await URLSession.shared.data(for: request)
+            data = responseData
+            if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+                throw ClaudeVisionError.httpError(statusCode: http.statusCode)
+            }
+        } catch let error as ClaudeVisionError {
+            throw error
+        } catch {
+            throw ClaudeVisionError.networkError(error)
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let content = json["content"] as? [[String: Any]],
+              let first = content.first,
+              let text = first["text"] as? String else {
+            throw ClaudeVisionError.noTextContent
+        }
+
+        return try parseAnalysis(from: text)
+    }
+
+    static func analyzeReceiptText(lines: [String]) async throws -> ReceiptAnalysis {
+        guard let apiKey = ClaudeAPIConfig.apiKey else {
+            throw ClaudeVisionError.noAPIKey
+        }
+
+        let receiptText = lines.joined(separator: "\n")
+
+        let body: [String: Any] = [
+            "model": ClaudeAPIConfig.recommendationModel,
+            "max_tokens": 512,
+            "messages": [
+                [
+                    "role": "user",
+                    "content": """
+                    Here is the OCR text from a receipt:
+
+                    \(receiptText)
+
+                    Analyze this receipt text. If the receipt includes an address or location, use it to infer cultural tipping norms for that area. Return ONLY a JSON object with these fields:
+                    - "total": number (the final total amount charged, required)
+                    - "subtotal": number or null
+                    - "tax": number or null
+                    - "serviceType": one of "restaurant","bar","cafe","delivery","rideshare","salon","spa","tattoo","valet","hotel","movers","other" or null
+                    - "numberOfGuests": integer or null (look for guest/cover count)
+                    - "venueName": string or null
+                    - "autoGratuityIncluded": boolean or null (true if gratuity/service charge is already added)
+                    - "autoGratuityAmount": number or null (the gratuity/service charge amount if included)
+                    Return ONLY valid JSON, no markdown, no explanation.
+                    """
+                ]
+            ]
+        ]
+
+        var request = URLRequest(url: ClaudeAPIConfig.endpoint)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue(ClaudeAPIConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
+        request.timeoutInterval = 5
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let data: Data
